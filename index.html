@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>AjGolf Connect · จองคิวเข้าพบอาจารย์กอล์ฟ</title>
+  <title>AjGolf Connect · จองคิวเข้าพบอาจารย์</title>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Mitr:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
     :root {
@@ -92,6 +92,34 @@
     textarea { min-height: 120px; resize: vertical; }
     .field { margin-bottom: 14px; } .field:last-child { margin-bottom: 0; }
 
+    .seg { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    @media (max-width: 560px) { .seg { grid-template-columns: 1fr; } }
+    .seg-btn {
+      font: inherit; font-weight: 600; padding: 11px 10px; cursor: pointer; background: #fff; color: var(--ink);
+      border: var(--px) solid var(--ink); box-shadow: 4px 4px 0 var(--ink);
+    }
+    .seg-btn.active { background: var(--grass); color: #fff; translate: 4px 4px; box-shadow: none; }
+    .ac { position: relative; }
+    .ac-list {
+      position: absolute; left: 0; right: 0; top: 100%; z-index: 20; max-height: 260px; overflow-y: auto;
+      background: #fff; border: var(--px) solid var(--ink); box-shadow: 6px 6px 0 var(--ink);
+    }
+    .ac-item { padding: 10px 12px; cursor: pointer; border-bottom: 2px solid #eee; }
+    .ac-item:last-child { border-bottom: none; }
+    .ac-item:hover, .ac-item.active { background: var(--coin); }
+    .ac-item .t { font-weight: 600; }
+    .ac-item .m { font-size: 13px; color: #5a4a3a; }
+    .ac-item.new .t { color: var(--grass-dark); }
+    .dup-warn {
+      margin-top: 8px; padding: 10px 12px; font-size: 14px; background: #ffd6d4; color: var(--red-dark);
+      border: var(--px) solid var(--ink); box-shadow: 3px 3px 0 var(--ink);
+    }
+    .dup-warn strong { font-weight: 600; }
+    .round-badge {
+      display: inline-block; margin-top: 8px; padding: 4px 10px; font-size: 13px; font-weight: 600;
+      background: var(--coin); border: var(--px) solid var(--ink); box-shadow: 3px 3px 0 var(--ink);
+    }
+    .round-badge button { background: none; border: none; font: inherit; color: var(--red); cursor: pointer; margin-left: 6px; text-decoration: underline; }
     .member { display: grid; grid-template-columns: 150px 1fr 44px; gap: 8px; margin-bottom: 8px; align-items: center; }
     .member button { height: 44px; border: var(--px) solid var(--ink); background: #fff; cursor: pointer; color: var(--red); font-family: var(--pixel-font); font-size: 12px; box-shadow: 3px 3px 0 var(--ink); }
     .member button:active { translate: 3px 3px; box-shadow: none; }
@@ -180,7 +208,7 @@
 
 <div class="wrap">
   <header>
-    <h1>AjGolf Connect<span class="th">จองคิวเข้าพบอาจารย์กอล์ฟ</span></h1>
+    <h1>AjGolf Connect<span class="th">จองคิวเข้าพบอาจารย์</span></h1>
     <div class="hud">
       <span><i class="coin-icon"></i> 30 MIN</span>
       <span class="th">จันทร์ · พฤหัส · ศุกร์</span>
@@ -193,11 +221,21 @@
       <h2>WORLD 1 · ข้อมูลโครงงาน</h2>
       <div class="body">
         <div class="field">
-          <label for="topic">หัวข้อโครงงาน <span class="muted">(ถ้ามี)</span></label>
-          <input id="topic" maxlength="200" placeholder="เช่น ระบบจัดการคลังสินค้าด้วย RFID">
+          <label>ประเภทการเข้าพบ *</label>
+          <div class="seg" role="radiogroup">
+            <button type="button" class="seg-btn active" id="visitFirst" role="radio" aria-checked="true">1ST · เข้าพบครั้งแรก เสนอหัวข้อโครงงาน</button>
+            <button type="button" class="seg-btn" id="visitNext" role="radio" aria-checked="false">NEXT · อัพเดทความคืบหน้าโครงงาน</button>
+          </div>
+        </div>
+        <div class="field ac">
+          <label for="topic" id="topicLabel">หัวข้อโครงงาน <span class="muted">(ถ้ามี)</span></label>
+          <input id="topic" maxlength="200" placeholder="เช่น ระบบจัดการคลังสินค้าด้วย RFID" autocomplete="off">
+          <div class="ac-list" id="topicList" hidden></div>
+          <div class="round-badge" id="roundBadge" hidden></div>
+          <div class="dup-warn" id="dupWarn" hidden></div>
         </div>
         <div class="field">
-          <label for="desc">ลักษณะของโครงงาน ขอบเขต หรือสิ่งที่ต้องการทำ *</label>
+          <label for="desc" id="descLabel">ลักษณะของโครงงาน ขอบเขต หรือสิ่งที่ต้องการทำ *</label>
           <textarea id="desc" required placeholder="อธิบายปัญหาที่ต้องการแก้ กลุ่มผู้ใช้ เทคโนโลยีที่คิดจะใช้ และสิ่งที่อยากปรึกษา"></textarea>
         </div>
       </div>
@@ -301,6 +339,85 @@
     if (r.ok) { cfg = r.config; $('memberHint').textContent = `ไม่เกิน ${cfg.maxMembers} คน`; }
   }).catch(() => {});
 
+  // ---- หัวข้อที่เคยเข้าพบ (autocomplete) ----
+  let topics = [], selectedTopic = null, acIndex = -1;
+  apiGet('topics').then(r => { if (r.ok) topics = r.topics; }).catch(() => {});
+
+  const topicInput = $('topic'), topicList = $('topicList');
+  let visitMode = 'first';   // 'first' | 'next'
+  const DESC_FIRST = 'ลักษณะของโครงงาน ขอบเขต หรือสิ่งที่ต้องการทำ *';
+  const DESC_NEXT = 'สิ่งที่ต้องการปรึกษาในรอบนี้ / ความคืบหน้า *';
+  function setMode(mode) {
+    visitMode = mode;
+    const first = mode === 'first';
+    $('visitFirst').classList.toggle('active', first); $('visitFirst').setAttribute('aria-checked', first);
+    $('visitNext').classList.toggle('active', !first); $('visitNext').setAttribute('aria-checked', !first);
+    selectedTopic = null; topicInput.value = ''; topicList.hidden = true; $('roundBadge').hidden = true; $('dupWarn').hidden = true;
+    $('members').innerHTML = ''; addMemberRow(false);
+    if (first) {
+      $('topicLabel').innerHTML = 'หัวข้อโครงงาน <span class="muted">(ถ้ามี)</span>';
+      topicInput.placeholder = 'เช่น ระบบจัดการคลังสินค้าด้วย RFID';
+      $('descLabel').textContent = DESC_FIRST;
+    } else {
+      $('topicLabel').innerHTML = 'เลือกหัวข้อที่เคยเข้าพบ * <span class="muted">(พิมพ์เพื่อค้นหา)</span>';
+      topicInput.placeholder = topics.length ? 'พิมพ์หรือคลิกเพื่อเลือกหัวข้อ…' : 'ยังไม่มีหัวข้อที่เคยเข้าพบ';
+      $('descLabel').textContent = DESC_NEXT;
+      topicInput.focus();
+    }
+  }
+  $('visitFirst').onclick = () => setMode('first');
+  $('visitNext').onclick = () => setMode('next');
+
+  const normTopic = t => String(t || '').trim().replace(/\s+/g, ' ').toLowerCase();
+  function duplicateOf(topicText) {
+    const k = normTopic(topicText); if (!k) return null;
+    return topics.find(t => normTopic(t.topic) === k) || null;
+  }
+  function checkDuplicate() {
+    if (visitMode !== 'first') { $('dupWarn').hidden = true; return null; }
+    const dup = duplicateOf(topicInput.value);
+    if (dup) {
+      $('dupWarn').innerHTML = `⚠ <strong>มีกลุ่มที่ทำหัวข้อโครงงานนี้ไปแล้ว</strong> (${esc(dup.members.map(m => m.name).join(', ') || 'ไม่ระบุสมาชิก')} · เข้าพบล่าสุด ${esc(dup.lastDate)})<br>ถ้าเป็นกลุ่มเดียวกัน ให้เลือก "NEXT · อัพเดทความคืบหน้าโครงงาน" · ถ้าเป็นกลุ่มใหม่ กรุณาใช้ชื่อหัวข้ออื่น`;
+      $('dupWarn').hidden = false;
+    } else $('dupWarn').hidden = true;
+    return dup;
+  }
+  function renderTopicList() {
+    if (visitMode !== 'next') { topicList.hidden = true; return; }
+    const q = topicInput.value.trim().toLowerCase();
+    const hits = topics.filter(t => !q || t.topic.toLowerCase().includes(q)).slice(0, 8);
+    if (!hits.length) { topicList.hidden = true; return; }
+    topicList.innerHTML = hits.map((t, i) => `
+      <div class="ac-item${i === acIndex ? ' active' : ''}" data-i="${i}">
+        <div class="t">${esc(t.topic)}</div>
+        <div class="m">เข้าพบแล้ว ${t.rounds} รอบ · ล่าสุด ${esc(t.lastDate)} · ${t.members.map(m => esc(m.name)).join(', ')}</div>
+      </div>`).join('');
+    topicList.querySelectorAll('.ac-item').forEach(el => el.onmousedown = ev => { ev.preventDefault(); chooseTopic(hits[+el.dataset.i]); });
+    topicList.hidden = false;
+  }
+  function chooseTopic(t) {
+    selectedTopic = t; acIndex = -1;
+    topicInput.value = t.topic;
+    topicList.hidden = true;
+    // เติมสมาชิกจากรอบก่อน
+    $('members').innerHTML = '';
+    (t.members.length ? t.members : [{ id: '', name: '' }]).forEach(m => { addMemberRow(false); const row = $('members').lastElementChild; row.querySelector('.m-id').value = m.id; row.querySelector('.m-name').value = m.name; });
+    $('roundBadge').innerHTML = `▶ รอบที่ ${t.rounds + 1} · ต่อจากรอบก่อน บันทึกใน sheet เดิม`;
+    $('roundBadge').hidden = false;
+  }
+  topicInput.addEventListener('input', () => { checkDuplicate(); acIndex = -1; if (selectedTopic && topicInput.value.trim() !== selectedTopic.topic) { selectedTopic = null; $('roundBadge').hidden = true; } renderTopicList(); });
+  topicInput.addEventListener('focus', renderTopicList);
+  topicInput.addEventListener('blur', () => setTimeout(() => { topicList.hidden = true; }, 120));
+  topicInput.addEventListener('keydown', ev => {
+    const items = topicList.querySelectorAll('.ac-item');
+    if (topicList.hidden || !items.length) return;
+    if (ev.key === 'ArrowDown') { ev.preventDefault(); acIndex = (acIndex + 1) % items.length; renderTopicList(); }
+    else if (ev.key === 'ArrowUp') { ev.preventDefault(); acIndex = (acIndex - 1 + items.length) % items.length; renderTopicList(); }
+    else if (ev.key === 'Enter' && acIndex >= 0) { ev.preventDefault(); items[acIndex].dispatchEvent(new MouseEvent('mousedown')); }
+    else if (ev.key === 'Escape') topicList.hidden = true;
+  });
+  function esc(x) { return String(x).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
+
   // ---- สมาชิก ----
   function addMemberRow(focus) {
     if ($('members').children.length >= cfg.maxMembers) return;
@@ -318,6 +435,7 @@
   function updateAddBtn() { $('addMember').hidden = $('members').children.length >= cfg.maxMembers; }
   $('addMember').onclick = () => addMemberRow(true);
   addMemberRow(false);
+  setMode('first');
 
   // ---- โหลดข้อมูลคิวว่าง ----
   async function loadSlots(keepSelection) {
@@ -407,10 +525,13 @@
       members,
       email: '',
       slotKey: slot ? slot.value : '',
+      visit: visitMode,
     };
 
     const errs = [];
-    if (!form.description) errs.push('กรุณาอธิบายลักษณะ/ขอบเขตโครงงาน');
+    if (visitMode === 'first' && duplicateOf(form.topic)) errs.push('มีกลุ่มที่ทำหัวข้อโครงงานนี้ไปแล้ว กรุณาใช้ชื่อหัวข้ออื่น หรือเลือก "อัพเดทความคืบหน้าโครงงาน" ถ้าเป็นกลุ่มเดียวกัน');
+    if (visitMode === 'next' && !selectedTopic) errs.push('กรุณาเลือกหัวข้อที่เคยเข้าพบจากรายการ (ถ้าไม่มี ให้เลือก "เข้าพบครั้งแรก เสนอหัวข้อโครงงาน")');
+    if (!form.description) errs.push(visitMode === 'next' ? 'กรุณาระบุสิ่งที่ต้องการปรึกษาในรอบนี้' : 'กรุณาอธิบายลักษณะ/ขอบเขตโครงงาน');
     if (!members.length) errs.push('กรุณาระบุสมาชิกอย่างน้อย 1 คน');
     members.forEach((m, i) => { if (!m.id || !m.name) errs.push(`สมาชิกคนที่ ${i + 1}: กรอกทั้งรหัสและชื่อ-สกุล`); });
     if (!selectedDate) errs.push('กรุณาเลือกวันที่บนปฏิทิน');
@@ -421,9 +542,9 @@
     $('submit').disabled = true; $('submit').innerHTML = '<span class="px">SAVING…</span>กำลังบันทึก';
     try {
       const res = await apiPost(form);
-      if (!res.ok) { showError(res.error); if (res.reload) loadSlots(true); return; }
+      if (!res.ok) { showError(res.error); if (res.reload) loadSlots(true); apiGet('topics').then(r => { if (r.ok) topics = r.topics; checkDuplicate(); }).catch(() => {}); return; }
       $('okWhen').textContent = res.when;
-      $('okTopic').textContent = res.topic;
+      $('okTopic').textContent = res.topic + (res.round > 1 ? ` · รอบที่ ${res.round}` : '');
       $('okId').textContent = res.bookingId;
       $('formView').hidden = true; $('successView').hidden = false;
       window.scrollTo(0, 0);
