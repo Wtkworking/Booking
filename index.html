@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>จองคิวเข้าพบอาจารย์</title>
+  <title>AjGolf Connect · จองคิวเข้าพบอาจารย์กอล์ฟ</title>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Mitr:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
     :root {
@@ -127,9 +127,7 @@
       box-shadow: inset -4px -4px 0 var(--brick-dark), 3px 3px 0 var(--ink);
     }
     .day.open:hover { background: var(--coin); box-shadow: inset -4px -4px 0 var(--coin-dark), 3px 3px 0 var(--ink); }
-    .day.open .n { position: absolute; bottom: 4px; right: 5px; font-size: 7px; color: var(--ink); opacity: .75; }
     .day.selected { background: var(--grass); color: #fff; box-shadow: inset -4px -4px 0 var(--grass-dark), 3px 3px 0 var(--ink); }
-    .day.selected .n { color: #fff; }
     .day.today::after { content: ''; position: absolute; top: 4px; left: 4px; width: 6px; height: 6px; background: var(--red); }
     .day.open:active { translate: 3px 3px; box-shadow: inset -4px -4px 0 var(--brick-dark); }
 
@@ -182,7 +180,7 @@
 
 <div class="wrap">
   <header>
-    <h1>PROJECT ADVISOR<span class="th">จองคิวเข้าพบอาจารย์</span></h1>
+    <h1>AjGolf Connect<span class="th">จองคิวเข้าพบอาจารย์กอล์ฟ</span></h1>
     <div class="hud">
       <span><i class="coin-icon"></i> 30 MIN</span>
       <span class="th">จันทร์ · พฤหัส · ศุกร์</span>
@@ -363,7 +361,6 @@
       if (info && info.slots.length) {
         el.classList.add('open');
         el.setAttribute('role', 'button'); el.tabIndex = 0;
-        el.innerHTML = `${d}<span class="n">${info.slots.length}</span>`;
         if (key === selectedDate) el.classList.add('selected');
         el.onclick = () => selectDate(key);
         el.onkeydown = ev => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); selectDate(key); } };
