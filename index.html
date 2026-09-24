@@ -168,8 +168,9 @@
     .slot { display: block; }
     .slot input { position: absolute; opacity: 0; width: 0; height: 0; }
     .slot span {
-      display: block; text-align: center; padding: 12px 8px; border: var(--px) solid var(--ink); background: #fff;
-      cursor: pointer; font-family: var(--pixel-font); font-size: 10px; box-shadow: 3px 3px 0 var(--ink); user-select: none;
+      display: block; text-align: center; padding: 10px 8px; border: var(--px) solid var(--ink); background: #fff;
+      cursor: pointer; font-family: var(--thai-font); font-size: 18px; font-weight: 600; letter-spacing: .5px;
+      font-variant-numeric: tabular-nums; box-shadow: 3px 3px 0 var(--ink); user-select: none;
     }
     .slot:hover span { background: var(--coin); }
     .slot input:checked + span { background: var(--red); color: #fff; }
@@ -197,6 +198,7 @@
       .line-box { flex-direction: column; text-align: center; }
       .day { font-size: 10px; } .cal { gap: 4px; }
       .slots { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+      .slot span { font-size: 16px; }
       .panel { box-shadow: inset 0 0 0 var(--px) #fff, 5px 5px 0 var(--ink); }
     }
   </style>
@@ -310,7 +312,7 @@
 
 <script>
   // ===== URL ของ Apps Script Web App (ลงท้ายด้วย /exec) =====
-  const API_URL = 'https://script.google.com/macros/s/AKfycbzlcGvbrVyrGKS9c1VAC-Jgsdnch_kRy3WFen8KKLZG2XUn-3JWnCiIV3BUVAxWByBp/exec';
+  const API_URL = 'https://script.google.com/macros/s/AKfycbxDJN97yvzEdmMk1SzSSIsp7ozdas-DPJJskiK4tO_WeqtjcEE1vnQJPM_03toWsUeR/exec';
   // ===========================================================
 
   let cfg = { maxMembers: 5, slotMinutes: 30, weeksAhead: 4 };
@@ -402,7 +404,7 @@
     // เติมสมาชิกจากรอบก่อน
     $('members').innerHTML = '';
     (t.members.length ? t.members : [{ id: '', name: '' }]).forEach(m => { addMemberRow(false); const row = $('members').lastElementChild; row.querySelector('.m-id').value = m.id; row.querySelector('.m-name').value = m.name; });
-    $('roundBadge').innerHTML = `▶ รอบที่ ${t.rounds + 1} · ต่อจากรอบก่อน บันทึกใน sheet เดิม`;
+    $('roundBadge').textContent = `▶ อัพเดทความคืบหน้าครั้งที่ ${t.rounds + 1}`;
     $('roundBadge').hidden = false;
   }
   topicInput.addEventListener('input', () => { checkDuplicate(); acIndex = -1; if (selectedTopic && topicInput.value.trim() !== selectedTopic.topic) { selectedTopic = null; $('roundBadge').hidden = true; } renderTopicList(); });
@@ -508,7 +510,7 @@
     $('slotBlock').hidden = false;
     $('slotDate').textContent = info.dateLabel;
     $('slotArea').innerHTML = info.slots.map(s =>
-      `<label class="slot"><input type="radio" name="slot" value="${s.key}"><span>${s.start}-${s.end}</span></label>`).join('');
+      `<label class="slot"><input type="radio" name="slot" value="${s.key}"><span>${s.start} – ${s.end}</span></label>`).join('');
   }
   $('reload').onclick = () => loadSlots(true);
   loadSlots(false);
