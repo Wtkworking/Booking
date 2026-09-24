@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>จองคิวเข้าพบอาจารย์ที่ปรึกษา</title>
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --ink: #1b2432;
+      --ink-soft: #55607a;
+      --paper: #f6f4ef;
+      --card: #ffffff;
+      --line: #d9d6cf;
+      --accent: #0d6e6e;
+      --accent-soft: #dff1ef;
+      --danger: #b23a3a;
+      --danger-soft: #fbe9e9;
+      --radius: 10px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; background: var(--paper); color: var(--ink);
+      font-family: 'Sarabun', 'Noto Sans Thai', system-ui, sans-serif; font-size: 16px; line-height: 1.55;
+    }
+    .wrap { max-width: 760px; margin: 0 auto; padding: 28px 18px 64px; }
+    header h1 { font-size: 26px; font-weight: 700; margin: 0 0 4px; }
+    header p { margin: 0 0 24px; color: var(--ink-soft); }
+
+    section {
+      background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
+      padding: 20px; margin-bottom: 16px;
+    }
+    section h2 { font-size: 17px; font-weight: 600; margin: 0 0 12px; }
+    section h2 small { font-weight: 400; color: var(--ink-soft); font-size: 14px; margin-left: 6px; }
+
+    label { display: block; font-size: 14px; color: var(--ink-soft); margin-bottom: 4px; }
+    input, textarea {
+      width: 100%; font: inherit; padding: 9px 11px; border: 1px solid var(--line); border-radius: 7px;
+      background: #fff; color: var(--ink);
+    }
+    input:focus, textarea:focus { outline: 2px solid var(--accent); outline-offset: 1px; border-color: var(--accent); }
+    textarea { min-height: 120px; resize: vertical; }
+    .field { margin-bottom: 14px; }
+    .field:last-child { margin-bottom: 0; }
+
+    .member { display: grid; grid-template-columns: 150px 1fr 40px; gap: 8px; margin-bottom: 8px; align-items: center; }
+    .member button { height: 40px; border: 1px solid var(--line); background: #fff; border-radius: 7px; cursor: pointer; color: var(--ink-soft); font-size: 18px; }
+    .member button:hover { background: var(--danger-soft); color: var(--danger); }
+    .add { background: none; border: 1px dashed var(--line); color: var(--accent); font: inherit; font-weight: 500; padding: 8px 12px; border-radius: 7px; cursor: pointer; width: 100%; }
+    .add:hover { background: var(--accent-soft); }
+
+    .day { margin-bottom: 16px; }
+    .day h3 { font-size: 15px; font-weight: 600; margin: 0 0 8px; }
+    .slots { display: flex; flex-wrap: wrap; gap: 8px; }
+    .slot input { position: absolute; opacity: 0; width: 0; height: 0; }
+    .slot span {
+      display: inline-block; padding: 7px 12px; border: 1px solid var(--line); border-radius: 999px;
+      cursor: pointer; font-size: 14px; background: #fff; user-select: none;
+    }
+    .slot:hover span { border-color: var(--accent); }
+    .slot input:checked + span { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+    .slot input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+    .muted { color: var(--ink-soft); font-size: 14px; }
+    .toolbar { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 12px; }
+    .link { background: none; border: none; color: var(--accent); font: inherit; cursor: pointer; padding: 0; text-decoration: underline; }
+
+    .submit {
+      width: 100%; padding: 13px; font: inherit; font-size: 17px; font-weight: 600; color: #fff;
+      background: var(--accent); border: none; border-radius: var(--radius); cursor: pointer;
+    }
+    .submit:disabled { opacity: .6; cursor: progress; }
+
+    .alert { padding: 12px 14px; border-radius: 8px; margin-bottom: 14px; white-space: pre-line; }
+    .alert.error { background: var(--danger-soft); color: var(--danger); }
+    .success { text-align: center; padding: 36px 20px; }
+    .success .check { width: 56px; height: 56px; border-radius: 50%; background: var(--accent-soft); color: var(--accent); display: inline-flex; align-items: center; justify-content: center; font-size: 28px; margin-bottom: 12px; }
+    .success h2 { font-size: 22px; margin: 0 0 8px; }
+    .success p { margin: 4px 0; }
+    .skeleton { height: 34px; border-radius: 999px; background: linear-gradient(90deg,#eee,#f7f7f7,#eee); background-size: 200% 100%; animation: sh 1.2s infinite; width: 90px; display: inline-block; margin: 0 8px 8px 0; }
+    @keyframes sh { to { background-position: -200% 0; } }
+    @media (prefers-reduced-motion: reduce) { .skeleton { animation: none; } }
+    @media (max-width: 520px) { .member { grid-template-columns: 1fr; } .member button { width: 100%; } }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>จองคิวเข้าพบอาจารย์ที่ปรึกษาโครงงาน</h1>
+    <p id="intro">รอบละ 30 นาที เปิดเฉพาะวันจันทร์ พฤหัสบดี และศุกร์ 09:00–17:00</p>
+  </header>
+
+  <div id="formView">
+    <section>
+      <h2>ข้อมูลโครงงาน</h2>
+      <div class="field">
+        <label for="topic">หัวข้อโครงงาน <span class="muted">(ถ้ามี)</span></label>
+        <input id="topic" maxlength="200" placeholder="เช่น ระบบจัดการคลังสินค้าด้วย RFID">
+      </div>
+      <div class="field">
+        <label for="desc">ลักษณะของโครงงาน ขอบเขต หรือสิ่งที่ต้องการทำ *</label>
+        <textarea id="desc" required placeholder="อธิบายปัญหาที่ต้องการแก้ กลุ่มผู้ใช้ เทคโนโลยีที่คิดจะใช้ และสิ่งที่อยากปรึกษา"></textarea>
+      </div>
+    </section>
+
+    <section>
+      <h2>สมาชิกกลุ่ม <small id="memberHint"></small></h2>
+      <div id="members"></div>
+      <button type="button" class="add" id="addMember">+ เพิ่มสมาชิก</button>
+      <div class="field" style="margin-top:14px">
+        <label for="email">อีเมลผู้ติดต่อ <span class="muted">(ถ้าต้องการรับนัดหมายลงปฏิทินของกลุ่ม)</span></label>
+        <input id="email" type="email" placeholder="student@university.ac.th">
+      </div>
+    </section>
+
+    <section>
+      <div class="toolbar">
+        <h2 style="margin:0">เลือกช่วงเวลาเข้าพบ *</h2>
+        <button type="button" class="link" id="reload">โหลดเวลาว่างใหม่</button>
+      </div>
+      <div id="slotArea"><span class="skeleton"></span><span class="skeleton"></span><span class="skeleton"></span><span class="skeleton"></span></div>
+    </section>
+
+    <div id="error" class="alert error" hidden></div>
+    <button class="submit" id="submit">ยืนยันการจอง</button>
+  </div>
+
+  <section id="successView" class="success" hidden>
+    <div class="check">✓</div>
+    <h2>จองคิวเรียบร้อย</h2>
+    <p id="okWhen"></p>
+    <p id="okTopic" class="muted"></p>
+    <p class="muted">รหัสการจอง <strong id="okId"></strong></p>
+    <p class="muted" style="margin-top:14px">ส่งนัดหมายไปที่อีเมลอาจารย์แล้ว หากใส่อีเมลไว้จะได้รับไฟล์ปฏิทินด้วย</p>
+    <p style="margin-top:18px"><button type="button" class="link" onclick="location.reload()">จองคิวอีกกลุ่ม</button></p>
+  </section>
+</div>
+
+<script>
+  // ===== ใส่ URL ของ Apps Script Web App ตรงนี้ (ลงท้ายด้วย /exec) =====
+  const API_URL = 'https://script.google.com/macros/s/XXXXXXXXXXXXXXXX/exec';
+  // ==================================================================
+
+  let cfg = { maxMembers: 5, slotMinutes: 30, weeksAhead: 4 };
+  const $ = id => document.getElementById(id);
+
+  async function apiGet(action) {
+    const res = await fetch(`${API_URL}?action=${action}`, { method: 'GET', redirect: 'follow' });
+    return res.json();
+  }
+  async function apiPost(payload) {
+    // ต้องใช้ text/plain เพื่อไม่ให้เกิด CORS preflight (Apps Script ไม่รองรับ OPTIONS)
+    const res = await fetch(API_URL, {
+      method: 'POST', redirect: 'follow',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(payload),
+    });
+    return res.json();
+  }
+
+  apiGet('config').then(r => {
+    if (r.ok) { cfg = r.config; $('memberHint').textContent = `ไม่เกิน ${cfg.maxMembers} คน`; }
+  }).catch(() => {});
+
+  // ---- สมาชิก ----
+  function addMemberRow(focus) {
+    if ($('members').children.length >= cfg.maxMembers) return;
+    const div = document.createElement('div');
+    div.className = 'member';
+    div.innerHTML = `
+      <input class="m-id" placeholder="รหัสนักศึกษา" inputmode="numeric" aria-label="รหัสนักศึกษา">
+      <input class="m-name" placeholder="ชื่อ-สกุล" aria-label="ชื่อ-สกุล">
+      <button type="button" title="ลบ" aria-label="ลบสมาชิก">×</button>`;
+    div.querySelector('button').onclick = () => { if ($('members').children.length > 1) div.remove(); updateAddBtn(); };
+    $('members').appendChild(div);
+    if (focus) div.querySelector('.m-id').focus();
+    updateAddBtn();
+  }
+  function updateAddBtn() { $('addMember').hidden = $('members').children.length >= cfg.maxMembers; }
+  $('addMember').onclick = () => addMemberRow(true);
+  addMemberRow(false);
+
+  // ---- ช่องเวลา ----
+  async function loadSlots() {
+    $('slotArea').innerHTML = '<span class="skeleton"></span><span class="skeleton"></span><span class="skeleton"></span><span class="skeleton"></span>';
+    try {
+      const r = await apiGet('slots');
+      if (!r.ok) throw new Error(r.error);
+      renderSlots(r.days);
+    } catch (e) {
+      $('slotArea').innerHTML = `<div class="alert error">โหลดเวลาว่างไม่สำเร็จ: ${e.message}</div>`;
+    }
+  }
+  function renderSlots(days) {
+    if (!days.length) {
+      $('slotArea').innerHTML = `<p class="muted">ยังไม่มีช่วงเวลาว่างใน ${cfg.weeksAhead} สัปดาห์ข้างหน้า ลองกลับมาดูใหม่ภายหลัง</p>`;
+      return;
+    }
+    $('slotArea').innerHTML = days.map(d => `
+      <div class="day">
+        <h3>${d.dateLabel}</h3>
+        <div class="slots">
+          ${d.slots.map(s => `<label class="slot"><input type="radio" name="slot" value="${s.key}"><span>${s.start}–${s.end}</span></label>`).join('')}
+        </div>
+      </div>`).join('');
+  }
+  $('reload').onclick = loadSlots;
+  loadSlots();
+
+  // ---- ส่ง ----
+  $('submit').onclick = async () => {
+    const members = [...document.querySelectorAll('.member')].map(r => ({
+      id: r.querySelector('.m-id').value.trim(), name: r.querySelector('.m-name').value.trim(),
+    })).filter(m => m.id || m.name);
+    const slot = document.querySelector('input[name=slot]:checked');
+    const form = {
+      topic: $('topic').value.trim(),
+      description: $('desc').value.trim(),
+      members,
+      email: $('email').value.trim(),
+      slotKey: slot ? slot.value : '',
+    };
+
+    const errs = [];
+    if (!form.description) errs.push('กรุณาอธิบายลักษณะ/ขอบเขตโครงงาน');
+    if (!members.length) errs.push('กรุณาระบุสมาชิกอย่างน้อย 1 คน');
+    members.forEach((m, i) => { if (!m.id || !m.name) errs.push(`สมาชิกคนที่ ${i + 1}: กรอกทั้งรหัสและชื่อ-สกุล`); });
+    if (!form.slotKey) errs.push('กรุณาเลือกช่วงเวลาเข้าพบ');
+    if (errs.length) return showError(errs.join('\n'));
+
+    $('error').hidden = true;
+    $('submit').disabled = true; $('submit').textContent = 'กำลังบันทึก…';
+    try {
+      const res = await apiPost(form);
+      if (!res.ok) { showError(res.error); if (res.reload) loadSlots(); return; }
+      $('okWhen').textContent = res.when;
+      $('okTopic').textContent = res.topic;
+      $('okId').textContent = res.bookingId;
+      $('formView').hidden = true; $('successView').hidden = false;
+      window.scrollTo(0, 0);
+    } catch (e) {
+      showError('เกิดข้อผิดพลาด: ' + e.message);
+    } finally {
+      $('submit').disabled = false; $('submit').textContent = 'ยืนยันการจอง';
+    }
+  };
+  function showError(msg) { $('error').textContent = msg; $('error').hidden = false; $('error').scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+</script>
+</body>
+</html>
