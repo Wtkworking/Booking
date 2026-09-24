@@ -36,23 +36,10 @@
       min-height: 100vh; position: relative; overflow-x: hidden;
       image-rendering: pixelated;
     }
-    /* ---------- ฉากหลัง 8-bit ---------- */
-    .cloud {
-      pointer-events: none;
-      position: absolute; width: 96px; height: 40px; background: var(--cloud); z-index: 0;
-      box-shadow: 0 0 0 var(--px) var(--ink);
-    }
-    .cloud::before, .cloud::after { content: ''; position: absolute; background: var(--cloud); box-shadow: 0 0 0 var(--px) var(--ink); }
-    .cloud::before { width: 40px; height: 32px; top: -24px; left: 16px; }
-    .cloud::after  { width: 32px; height: 24px; top: -16px; left: 56px; }
-    .cloud i { position: absolute; inset: 0; background: var(--cloud); }
-    .cloud i::before { content: ''; position: absolute; width: 40px; height: 32px; top: -24px; left: 16px; background: var(--cloud); }
-    .cloud i::after  { content: ''; position: absolute; width: 32px; height: 24px; top: -16px; left: 56px; background: var(--cloud); }
-    .cloud.c1 { top: 70px;  left: 6%;  animation: drift 60s linear infinite; }
-    .cloud.c2 { top: 190px; right: 8%; transform: scale(.7); animation: drift 80s linear infinite reverse; }
-    .cloud.c3 { top: 420px; left: -40px; transform: scale(.85); animation: drift 95s linear infinite; }
-    @keyframes drift { from { translate: 0 0; } to { translate: 60px 0; } }
-    @media (prefers-reduced-motion: reduce) { .cloud, .coin-icon, .hero-sprite { animation: none !important; } }
+    /* ---------- ฉากหลัง 8-bit (canvas) ---------- */
+    #sky { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; image-rendering: pixelated; }
+    #fg { position: fixed; left: 0; right: 0; bottom: 0; width: 100%; height: 140px; z-index: 2; pointer-events: none; image-rendering: pixelated; }
+    @media (prefers-reduced-motion: reduce) { .coin-icon, .hero-sprite { animation: none !important; } }
 
     .ground {
       position: fixed; left: 0; right: 0; bottom: 0; height: 56px; z-index: 0;
@@ -65,11 +52,6 @@
       content: ''; position: absolute; left: 0; right: 0; top: 24px; height: var(--px);
       background: repeating-linear-gradient(90deg, transparent 0 14px, var(--brick-dark) 14px 18px, transparent 18px 28px, var(--brick-dark) 28px 32px);
     }
-    .hill { position: fixed; bottom: 52px; width: 220px; height: 90px; background: var(--grass); z-index: 0;
-      clip-path: polygon(0 100%, 20% 30%, 50% 0, 80% 30%, 100% 100%); }
-    .hill.h1 { left: -60px; } .hill.h2 { right: -80px; width: 300px; height: 120px; }
-    .hill::after { content: ''; position: absolute; inset: 0; background: var(--grass-dark); clip-path: polygon(0 100%, 20% 30%, 50% 0, 80% 30%, 100% 100%, 92% 100%, 78% 42%, 50% 12%, 22% 42%, 8% 100%); }
-
     /* ---------- เลย์เอาต์ ---------- */
     .wrap { position: relative; z-index: 1; max-width: 800px; margin: 0 auto; padding: 28px 16px 110px; }
     header { text-align: center; margin-bottom: 22px; }
@@ -186,7 +168,6 @@
 
     @media (max-width: 560px) {
       .member { grid-template-columns: 1fr; } .member button { width: 100%; }
-      .cloud.c1 { display: none; } .cloud.c2 { top: 150px; right: -30px; }
       .line-box { flex-direction: column; text-align: center; }
       .day { font-size: 10px; } .cal { gap: 4px; }
       .slots { grid-template-columns: repeat(2, 1fr); gap: 8px; }
@@ -195,10 +176,8 @@
   </style>
 </head>
 <body>
-<div class="cloud c1"><i></i></div>
-<div class="cloud c2"><i></i></div>
-<div class="cloud c3"><i></i></div>
-<div class="hill h1"></div><div class="hill h2"></div>
+<canvas id="sky" aria-hidden="true"></canvas>
+<canvas id="fg" aria-hidden="true"></canvas>
 <div class="ground"></div>
 
 <div class="wrap">
@@ -458,6 +437,180 @@
     }
   };
   function showError(msg) { $('error').textContent = msg; $('error').hidden = false; $('error').scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+</script>
+<script>
+/* ===== ฉากหลังเลื่อน + สุ่มวัตถุบนฟ้า (พิกเซลอาร์ตต้นฉบับ) ===== */
+(function () {
+  const cv = document.getElementById('sky'), ctx0 = cv.getContext('2d');
+  const fg = document.getElementById('fg'), ctxF = fg.getContext('2d');
+  let ctx = ctx0;  // เลเยอร์ที่กำลังวาด
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const PAL = { _: null, k: '#1a1a2e', w: '#ffffff', y: '#fcd000', o: '#c88000', r: '#e52521', g: '#00a800', G: '#007000', b: '#5c94fc', p: '#ff7bb0', c: '#8fd8ff', s: '#e8e0cc', d: '#8a3a0a', t: '#ffd9b3', B: '#0d6e6e' };
+
+  // สไปรต์: แถวละสตริง ตัวอักษร = สี, _ = โปร่ง
+  const SPR = {
+    cloud: [
+      '____kkkk________','___kwwwwk_______','__kwwwwwwkkkk___','_kwwwwwwwwwwwk__','kwwwwwwwwwwwwwk_','kwwwwwwwwwwwwwwk','_kkkkkkkkkkkkkk_'],
+    bird1: ['k_____k','_k___k_','__kkk__'],
+    bird2: ['__kkk__','_k___k_','k_____k'],
+    coin1: ['_kkkk_','kyyyyk','kyokyk','kyokyk','kyyyyk','_kkkk_'],
+    coin2: ['__kk__','_kyyk_','_kyok_','_kyok_','_kyyk_','__kk__'],
+    balloon: ['__kkkk__','_krrrrk_','krrpprrk','krrpprrk','krrrrrrk','_krrrrk_','__kkkk__','___kk___','__k__k__','_kddddk_','_kddddk_','__kkkk__'],
+    ufo: ['_____kkkkkk_____','____kccccccck___','___kccwwwwccck__','_kkkkkkkkkkkkkkk','kssssssssssssssk','kskyskyskyskysk_','_kkkkkkkkkkkkkk_'],
+    kite: ['___k___','__kyk__','_kyyyk_','kyyyyyk','_kyyyk_','__kyk__','___k___','___k___','__k____','___k___'],
+    plane: ['_____kk________','_____kwk_______','kkkkkkwwkkkkkkk','kwwwwwwwwwwwwwk','kkkkkkkwwkkkkkk','_____kwwk______','______kk_______'],
+    star: ['__k__','_kyk_','kyyyk','_kyk_','__k__'],
+    ballooncat: ['_k__k_','ktkkkt','ktttttk','ktkttkt','_ktttk_','__kkk__'],
+    // ตัวละครวิ่ง (ต้นฉบับ): นักศึกษาหมวกแก๊ป ถือแฟ้มเหลือง  3 เฟรม
+    run1: ['_____kkkkkk_____','____kBBBBBBk____','___kBBBBBBBBkkk_','___kttttttk_____','___ktkttktk_____','___kttttttk_____','____kkkkkk______','___kbbbbbbk_____','__ktkbbbbktk____','__ktkbbbbkyyyk__','___kbbbbbbkyyyk_','____kkkkkk_kkk__','___kkk__kkk_____','__kddk__kddk____','_kddk____kddk___','_kkk______kkk___'],
+    run2: ['_____kkkkkk_____','____kBBBBBBk____','___kBBBBBBBBkkk_','___kttttttk_____','___ktkttktk_____','___kttttttk_____','____kkkkkk______','___kbbbbbbk_____','___kbbbbbbk_____','__ktkbbbbkyyyk__','__ktkbbbbkyyyk__','____kkkkkk_kkk__','_____kkkk_______','____kddddk______','____kddddk______','____kkkkkk______'],
+    run3: ['_____kkkkkk_____','____kBBBBBBk____','___kBBBBBBBBkkk_','___kttttttk_____','___ktkttktk_____','___kttttttk_____','____kkkkkk______','___kbbbbbbk_____','__ktkbbbbktk____','__ktkbbbbkyyyk__','___kbbbbbbkyyyk_','____kkkkkk_kkk__','_____kkk_kkk____','____kddk__kddk__','___kddk____kddk_','___kkk______kkk_'],
+    jump: ['_____kkkkkk_____','____kBBBBBBk____','___kBBBBBBBBkkk_','___kttttttk_____','___ktkttktk_____','___kttttttk_____','____kkkkkk______','_ktkbbbbbbk_____','_ktkbbbbbbkyyyk_','__kkbbbbbbkyyyk_','___kbbbbbbk_kkk_','____kkkkkk______','___kkk__kkk_____','__kddk__kddk____','__kkk____kkk____','________________'],
+    bush: ['____kkkk____','__kkggggkk__','_kggggggggk_','kggGgggGgggk','kGggggGgggGk','_kkkkkkkkkk_'],
+    rock: ['__kkkk__','_kssssk_','kssswssk','kssssssk','_kkkkkk_'],
+    flag: ['kkk____','krrk___','krrrk__','krrrrk_','krrrk__','krrk___','kkk____','kd_____','kd_____','kd_____','kd_____','kd_____'],
+  };
+  const SPR_W = {}; Object.keys(SPR).forEach(k => SPR_W[k] = SPR[k][0].length);
+
+  function draw(name, x, y, scale) {
+    const rows = SPR[name];
+    for (let r = 0; r < rows.length; r++) for (let c = 0; c < rows[r].length; c++) {
+      const col = PAL[rows[r][c]]; if (!col) continue;
+      ctx.fillStyle = col; ctx.fillRect(Math.round(x + c * scale), Math.round(y + r * scale), scale, scale);
+    }
+  }
+
+  let W, H, DPR = 1; const FG_H = 140;
+  function resize() {
+    DPR = Math.min(devicePixelRatio || 1, 2);
+    W = innerWidth; H = innerHeight;
+    cv.width = W * DPR; cv.height = H * DPR; ctx0.setTransform(DPR, 0, 0, DPR, 0, 0);
+    fg.width = W * DPR; fg.height = FG_H * DPR; ctxF.setTransform(DPR, 0, 0, DPR, 0, 0);
+  }
+  addEventListener('resize', resize); resize();
+
+  // ---- เนินเขา 2 ชั้น (parallax) ----
+  function hills(offset, base, amp, period, color, dark) {
+    ctx.fillStyle = color; ctx.beginPath(); ctx.moveTo(0, H);
+    for (let x = 0; x <= W + 20; x += 8) {
+      const t = (x + offset) / period;
+      const y = base - amp * (0.6 + 0.4 * Math.sin(t)) * Math.abs(Math.sin(t * 0.5));
+      ctx.lineTo(x, Math.round(y / 4) * 4);
+    }
+    ctx.lineTo(W, H); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = dark; ctx.beginPath(); ctx.moveTo(0, H);
+    for (let x = 0; x <= W + 20; x += 8) {
+      const t = (x + offset) / period;
+      const y = base - amp * (0.6 + 0.4 * Math.sin(t)) * Math.abs(Math.sin(t * 0.5)) + 14;
+      ctx.lineTo(x, Math.round(y / 4) * 4);
+    }
+    ctx.lineTo(W, H); ctx.closePath(); ctx.fill();
+  }
+
+  // ---- วัตถุ ----
+  const objs = [];
+  const TYPES = [
+    { name: 'cloud',   w: 1.0, speed: [10, 25],  scale: [3, 6], y: [0.05, 0.55], anim: null },
+    { name: 'bird1',   w: 1.2, speed: [40, 80],  scale: [3, 4], y: [0.08, 0.5],  anim: 'bird2', rate: 6, wobble: 10 },
+    { name: 'coin1',   w: 0.8, speed: [20, 40],  scale: [3, 4], y: [0.1, 0.6],   anim: 'coin2', rate: 4, wobble: 6 },
+    { name: 'balloon', w: 0.7, speed: [8, 18],   scale: [3, 5], y: [0.05, 0.5],  anim: null, wobble: 4 },
+    { name: 'ufo',     w: 0.4, speed: [60, 120], scale: [3, 4], y: [0.03, 0.3],  anim: null, wobble: 8 },
+    { name: 'kite',    w: 0.6, speed: [15, 30],  scale: [3, 4], y: [0.1, 0.5],   anim: null, wobble: 12 },
+    { name: 'plane',   w: 0.5, speed: [90, 150], scale: [3, 4], y: [0.03, 0.25], anim: null },
+    { name: 'star',    w: 0.6, speed: [30, 60],  scale: [2, 3], y: [0.02, 0.4],  anim: null, wobble: 5 },
+    { name: 'ballooncat', w: 0.3, speed: [12, 22], scale: [4, 5], y: [0.1, 0.45], anim: null, wobble: 6 },
+  ];
+  const rnd = (a, b) => a + Math.random() * (b - a);
+  function pick() { const tot = TYPES.reduce((s, t) => s + t.w, 0); let r = Math.random() * tot; for (const t of TYPES) { r -= t.w; if (r <= 0) return t; } return TYPES[0]; }
+  function spawn(fromEdge) {
+    const t = pick(), scale = Math.round(rnd(t.scale[0], t.scale[1]));
+    const w = SPR_W[t.name] * scale;
+    objs.push({
+      t, scale, w,
+      x: fromEdge ? -w - rnd(0, 200) : rnd(-w, W),   // เลื่อนจากซ้ายไปขวา
+      y: rnd(t.y[0], t.y[1]) * H, y0: 0,
+      speed: rnd(t.speed[0], t.speed[1]), phase: rnd(0, Math.PI * 2),
+      dir: 1,
+    });
+    objs[objs.length - 1].y0 = objs[objs.length - 1].y;
+  }
+  for (let i = 0; i < 10; i++) spawn(false);
+
+  // ---- ของบนพื้น (เลื่อนไปทางซ้าย = ตัวละครวิ่งไปทางขวา) ----
+  const props = []; let nextProp = 0;
+  const PROPS = ['bush', 'bush', 'rock', 'flag'];
+  function spawnProp() {
+    const name = PROPS[Math.floor(Math.random() * PROPS.length)], scale = 4;
+    props.push({ name, scale, x: W + 20, w: SPR_W[name] * scale, h: SPR[name].length * scale });
+  }
+  const GROUND_SPEED = 140;   // px/วินาที
+
+  // ---- ตัวละครวิ่ง ----
+  const hero = { x: 0, vy: 0, y: 0, onGround: true, scale: 4, frame: 0 };
+  function heroX() { const m = (W - 800) / 2; return m >= 90 ? Math.max(8, m / 2 - 32) : 12; }
+
+  let last = performance.now(), off = 0, nextSpawn = 0;
+  function frame(now) {
+    const dt = reduce ? 0 : Math.min(0.05, (now - last) / 1000); last = now;
+    off += dt * 12;
+
+    ctx.clearRect(0, 0, W, H);
+    // เนินเขาไกล/ใกล้
+    hills(off * 0.5, H - 60, 110, 90, '#3dbd3d', '#2e9c2e');
+    hills(off * 1.2, H - 56, 80, 60, PAL.g, PAL.G);
+
+    // วัตถุ
+    for (let i = objs.length - 1; i >= 0; i--) {
+      const o = objs[i], t = o.t;
+      o.x += o.speed * dt;
+      if (t.wobble) o.y = o.y0 + Math.sin(now / 600 + o.phase) * t.wobble;
+      let name = t.name;
+      if (t.anim && Math.floor(now / 1000 * t.rate + o.phase) % 2) name = t.anim;
+      ctx.globalAlpha = t.name === 'cloud' ? 0.95 : 1;
+      draw(name, o.x, o.y, o.scale);
+      ctx.globalAlpha = 1;
+      if (o.x > W + 40) objs.splice(i, 1);
+    }
+    // ---- ของบนพื้น (เลเยอร์หลัง เห็นเฉพาะช่องว่างข้างฟอร์ม) ----
+    for (let i = props.length - 1; i >= 0; i--) {
+      const pr = props[i]; pr.x -= GROUND_SPEED * dt;
+      draw(pr.name, pr.x, H - 56 - pr.h + 4, pr.scale);
+      if (pr.x + pr.w < -20) props.splice(i, 1);
+    }
+    if (!reduce && now > nextProp) { spawnProp(); nextProp = now + rnd(1800, 4500); }
+
+    // ---- ตัวละคร: จอกว้างวาดเลเยอร์หน้าในช่องว่างซ้าย, จอแคบวาดเลเยอร์หลัง ----
+    ctxF.clearRect(0, 0, W, FG_H);
+    const wide = (W - 800) / 2 >= 90;
+    ctx = wide ? ctxF : ctx0;
+    const gy = wide ? FG_H - 56 : H - 56;
+
+    // ---- ตัวละคร ----
+    const hs = hero.scale, hw = 16 * hs, hh = 16 * hs, hx = heroX();
+    // กระโดดเมื่อสิ่งกีดขวาง (ไม่ใช่ธง) ใกล้เข้ามา
+    if (hero.onGround && !reduce) {
+      const ahead = props.find(pr => pr.name !== 'flag' && pr.x > hx + hw * 0.4 && pr.x < hx + hw + 70);
+      if (ahead) { hero.vy = -520; hero.onGround = false; }
+    }
+    if (!hero.onGround) {
+      hero.vy += 1500 * dt; hero.y += hero.vy * dt;
+      if (hero.y >= 0) { hero.y = 0; hero.vy = 0; hero.onGround = true; }
+    }
+    let hname = 'jump';
+    if (hero.onGround) { hname = ['run1', 'run2', 'run3', 'run2'][Math.floor(now / 110) % 4]; }
+    if (reduce) hname = 'run1';
+    draw(hname, hx, gy - hh + hero.y + 4, hs);
+    ctx = ctx0;
+
+    // สุ่มเกิดวัตถุใหม่
+    if (!reduce && now > nextSpawn) {
+      if (objs.length < 14) spawn(true);
+      nextSpawn = now + rnd(700, 2000);
+    }
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+})();
 </script>
 </body>
 </html>
