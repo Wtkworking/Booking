@@ -26,6 +26,7 @@
       --thai-font: 'Mitr', 'Sarabun', system-ui, sans-serif;
     }
     * { box-sizing: border-box; }
+    [hidden] { display: none !important; }   /* ให้ hidden ชนะ display:flex/inline-block */
     html, body { margin: 0; }
     body {
       color: var(--ink);
@@ -38,7 +39,7 @@
     }
     /* ---------- ฉากหลัง 8-bit (canvas) ---------- */
     #sky { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; image-rendering: pixelated; }
-    #fg { position: fixed; left: 0; right: 0; bottom: 0; width: 100%; height: 140px; z-index: 2; pointer-events: none; image-rendering: pixelated; }
+    #fg { position: fixed; left: 0; right: 0; bottom: 0; width: 100%; height: 260px; z-index: 2; pointer-events: none; image-rendering: pixelated; }
     @media (prefers-reduced-motion: reduce) { .coin-icon, .hero-sprite { animation: none !important; } }
 
     .ground {
@@ -570,7 +571,7 @@
   const fg = document.getElementById('fg'), ctxF = fg.getContext('2d');
   let ctx = ctx0;  // เลเยอร์ที่กำลังวาด
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const PAL = { _: null, k: '#1a1a2e', w: '#ffffff', y: '#fcd000', o: '#c88000', r: '#e52521', g: '#00a800', G: '#007000', b: '#5c94fc', p: '#ff7bb0', c: '#8fd8ff', s: '#e8e0cc', d: '#8a3a0a', t: '#ffd9b3', B: '#0d6e6e' };
+  const PAL = { _: null, k: '#1a1a2e', w: '#ffffff', y: '#fcd000', o: '#c88000', r: '#e52521', g: '#00a800', G: '#007000', b: '#5c94fc', p: '#ff7bb0', c: '#8fd8ff', s: '#e8e0cc', d: '#8a3a0a', t: '#ffd9b3', B: '#0d6e6e', h: '#5b3418', n: '#4aa3ff' };
 
   // สไปรต์: แถวละสตริง ตัวอักษร = สี, _ = โปร่ง
   const SPR = {
@@ -591,21 +592,27 @@
     run2: ['_____kkkkkk_____','____kBBBBBBk____','___kBBBBBBBBkkk_','___kttttttk_____','___ktkttktk_____','___kttttttk_____','____kkkkkk______','___kbbbbbbk_____','___kbbbbbbk_____','__ktkbbbbkyyyk__','__ktkbbbbkyyyk__','____kkkkkk_kkk__','_____kkkk_______','____kddddk______','____kddddk______','____kkkkkk______'],
     run3: ['_____kkkkkk_____','____kBBBBBBk____','___kBBBBBBBBkkk_','___kttttttk_____','___ktkttktk_____','___kttttttk_____','____kkkkkk______','___kbbbbbbk_____','__ktkbbbbktk____','__ktkbbbbkyyyk__','___kbbbbbbkyyyk_','____kkkkkk_kkk__','_____kkk_kkk____','____kddk__kddk__','___kddk____kddk_','___kkk______kkk_'],
     jump: ['_____kkkkkk_____','____kBBBBBBk____','___kBBBBBBBBkkk_','___kttttttk_____','___ktkttktk_____','___kttttttk_____','____kkkkkk______','_ktkbbbbbbk_____','_ktkbbbbbbkyyyk_','__kkbbbbbbkyyyk_','___kbbbbbbk_kkk_','____kkkkkk______','___kkk__kkk_____','__kddk__kddk____','__kkk____kkk____','________________'],
+    // ตัวละครผู้หญิง (ต้นฉบับ): ผมยาว โบว์เหลือง เสื้อชมพู กระโปรงเขียวน้ำทะเล ถือสมุด
+    frun1: ['______hhhhh_____','_____hhhhhhh____','____hhhhhhhhhy__','____hhtttttthyy_','____hhtkttkth___','____hhtttttth___','____hhkttttkh___','____hh_kkkk_h___','___thhkppppkhht_','___tkkkppppkkkt_','____kkkppppkk_nn','_____kBBBBBBk_nn','____kBBBBBBBBk__','____kBBBBBBBBk__','_____ktk__ktk___','____kddk___kddk_'],
+    frun2: ['______hhhhh_____','_____hhhhhhh____','____hhhhhhhhhy__','____hhtttttthyy_','____hhtkttkth___','____hhtttttth___','____hhkttttkh___','____hh_kkkk_h___','___thhkppppkhht_','___tkkkppppkkkt_','____kkkppppkk_nn','_____kBBBBBBk_nn','____kBBBBBBBBk__','____kBBBBBBBBk__','______kttk______','_____kddddk_____'],
+    frun3: ['______hhhhh_____','_____hhhhhhh____','____hhhhhhhhhy__','____hhtttttthyy_','____hhtkttkth___','____hhtttttth___','____hhkttttkh___','____hh_kkkk_h___','___thhkppppkhht_','___tkkkppppkkkt_','____kkkppppkk_nn','_____kBBBBBBk_nn','____kBBBBBBBBk__','____kBBBBBBBBk__','____ktk__ktk____','___kddk___kddk__'],
+    fjump: ['______hhhhh_____','_____hhhhhhh____','____hhhhhhhhhy__','____hhtttttthyy_','____hhtkttkth___','____hhtttttth___','____hhkttttkh___','____hh_kkkk_h___','___thhkppppkhht_','___tkkkppppkkkt_','____kkkppppkk_nn','_____kBBBBBBk_nn','____kBBBBBBBBk__','____kBBBBBBBBk__','_____kttkkttk___','____kddk__kddk__'],
     bush: ['____kkkk____','__kkggggkk__','_kggggggggk_','kggGgggGgggk','kGggggGgggGk','_kkkkkkkkkk_'],
     rock: ['__kkkk__','_kssssk_','kssswssk','kssssssk','_kkkkkk_'],
     flag: ['kkk____','krrk___','krrrk__','krrrrk_','krrrk__','krrk___','kkk____','kd_____','kd_____','kd_____','kd_____','kd_____'],
   };
   const SPR_W = {}; Object.keys(SPR).forEach(k => SPR_W[k] = SPR[k][0].length);
 
-  function draw(name, x, y, scale) {
-    const rows = SPR[name];
+  function draw(name, x, y, scale, flip) {
+    const rows = SPR[name], w = rows[0].length;
     for (let r = 0; r < rows.length; r++) for (let c = 0; c < rows[r].length; c++) {
       const col = PAL[rows[r][c]]; if (!col) continue;
-      ctx.fillStyle = col; ctx.fillRect(Math.round(x + c * scale), Math.round(y + r * scale), scale, scale);
+      const cc = flip ? (w - 1 - c) : c;
+      ctx.fillStyle = col; ctx.fillRect(Math.round(x + cc * scale), Math.round(y + r * scale), scale, scale);
     }
   }
 
-  let W, H, DPR = 1; const FG_H = 140;
+  let W, H, DPR = 1; const FG_H = 260;
   function resize() {
     DPR = Math.min(devicePixelRatio || 1, 2);
     W = innerWidth; H = innerHeight;
@@ -670,9 +677,13 @@
   }
   const GROUND_SPEED = 140;   // px/วินาที
 
-  // ---- ตัวละครวิ่ง ----
-  const hero = { x: 0, vy: 0, y: 0, onGround: true, scale: 4, frame: 0 };
-  function heroX() { const m = (W - 800) / 2; return m >= 90 ? Math.max(8, m / 2 - 32) : 12; }
+  // ---- ตัวละคร 2 ตัว หันหน้าเข้าหากัน: ชายซ้าย (หันขวา) / หญิงขวา (หันซ้าย) ----
+  const heroes = [
+    { vy: 0, y: 0, onGround: true, scale: 4, flip: false, run: ['run1', 'run2', 'run3', 'run2'], jump: 'jump', phase: 0,
+      x: () => { const m = (W - 800) / 2; return m >= 90 ? Math.max(8, m / 2 - 32) : 12; } },
+    { vy: 0, y: 0, onGround: true, scale: 4, flip: true, run: ['frun1', 'frun2', 'frun3', 'frun2'], jump: 'fjump', phase: 55,
+      x: () => { const m = (W - 800) / 2; return m >= 90 ? Math.min(W - 72, W - m / 2 - 32) : W - 76; } },
+  ];
 
   let last = performance.now(), off = 0, nextSpawn = 0;
   function frame(now) {
@@ -704,27 +715,27 @@
     }
     if (!reduce && now > nextProp) { spawnProp(); nextProp = now + rnd(1800, 4500); }
 
-    // ---- ตัวละคร: จอกว้างวาดเลเยอร์หน้าในช่องว่างซ้าย, จอแคบวาดเลเยอร์หลัง ----
+    // ---- ตัวละคร: จอกว้างวาดเลเยอร์หน้าในช่องว่างข้างฟอร์ม, จอแคบวาดเลเยอร์หลัง ----
     ctxF.clearRect(0, 0, W, FG_H);
     const wide = (W - 800) / 2 >= 90;
     ctx = wide ? ctxF : ctx0;
     const gy = wide ? FG_H - 56 : H - 56;
-
-    // ---- ตัวละคร ----
-    const hs = hero.scale, hw = 16 * hs, hh = 16 * hs, hx = heroX();
-    // กระโดดเมื่อสิ่งกีดขวาง (ไม่ใช่ธง) ใกล้เข้ามา
-    if (hero.onGround && !reduce) {
-      const ahead = props.find(pr => pr.name !== 'flag' && pr.x > hx + hw * 0.4 && pr.x < hx + hw + 70);
-      if (ahead) { hero.vy = -520; hero.onGround = false; }
+    for (const hero of heroes) {
+      const hs = hero.scale, hw = 16 * hs, hh = 16 * hs, hx = hero.x();
+      // กระโดดเมื่อสิ่งกีดขวาง (ไม่ใช่ธง) กำลังจะถึงตัว
+      if (hero.onGround && !reduce) {
+        const ahead = props.find(pr => pr.name !== 'flag' && pr.x + pr.w > hx - 30 && pr.x < hx + hw + 70);
+        if (ahead) { hero.vy = -520; hero.onGround = false; }
+      }
+      if (!hero.onGround) {
+        hero.vy += 1500 * dt; hero.y += hero.vy * dt;
+        if (hero.y >= 0) { hero.y = 0; hero.vy = 0; hero.onGround = true; }
+      }
+      let hname = hero.jump;
+      if (hero.onGround) hname = hero.run[Math.floor((now + hero.phase) / 110) % 4];
+      if (reduce) hname = hero.run[0];
+      draw(hname, hx, gy - hh + hero.y + 4, hs, hero.flip);
     }
-    if (!hero.onGround) {
-      hero.vy += 1500 * dt; hero.y += hero.vy * dt;
-      if (hero.y >= 0) { hero.y = 0; hero.vy = 0; hero.onGround = true; }
-    }
-    let hname = 'jump';
-    if (hero.onGround) { hname = ['run1', 'run2', 'run3', 'run2'][Math.floor(now / 110) % 4]; }
-    if (reduce) hname = 'run1';
-    draw(hname, hx, gy - hh + hero.y + 4, hs);
     ctx = ctx0;
 
     // สุ่มเกิดวัตถุใหม่
