@@ -215,6 +215,7 @@
       <span><i class="coin-icon"></i> 30 MIN</span>
       <span class="th">จันทร์ · พฤหัส · ศุกร์</span>
       <span>09:00–17:00</span>
+      <span class="th" id="openUntil"></span>
     </div>
   </header>
 
@@ -312,7 +313,7 @@
 
 <script>
   // ===== URL ของ Apps Script Web App (ลงท้ายด้วย /exec) =====
-  const API_URL = 'https://script.google.com/macros/s/AKfycbxDJN97yvzEdmMk1SzSSIsp7ozdas-DPJJskiK4tO_WeqtjcEE1vnQJPM_03toWsUeR/exec';
+  const API_URL = 'https://script.google.com/macros/s/AKfycbw2eb5jbprYxguLcRn4fAt7qwucdYYDVAgU0tpLpQipJsKHgHGLJLjnwO45vfM-KBdt/exec';
   // ===========================================================
 
   let cfg = { maxMembers: 5, slotMinutes: 30, weeksAhead: 4 };
@@ -338,7 +339,7 @@
   }
 
   apiGet('config').then(r => {
-    if (r.ok) { cfg = r.config; $('memberHint').textContent = `ไม่เกิน ${cfg.maxMembers} คน`; }
+    if (r.ok) { cfg = r.config; $('memberHint').textContent = `ไม่เกิน ${cfg.maxMembers} คน`; if (cfg.openUntil) $('openUntil').textContent = `เปิดจองถึง ${cfg.openUntil}`; }
   }).catch(() => {});
 
   // ---- หัวข้อที่เคยเข้าพบ (autocomplete) ----
@@ -445,6 +446,7 @@
     try {
       const r = await apiGet('slots');
       if (!r.ok) throw new Error(r.error);
+      if (!r.days.length) { $('cal').innerHTML = '<div class="muted" style="grid-column:1/-1;text-align:center;padding:20px">ยังไม่มีช่วงเวลาว่างในช่วงที่เปิดจอง</div>'; return; }
       slotMap = {};
       r.days.forEach(d => { slotMap[d.dateKey] = d; });
       if (!keepSelection || !slotMap[selectedDate]) {
