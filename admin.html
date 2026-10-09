@@ -3,239 +3,784 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="robots" content="noindex, nofollow">
-  <title>AjGolf Connect · หน้าอาจารย์</title>
+  <title>AjGolf Connect · จองคิวเข้าพบอาจารย์</title>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Mitr:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
-    :root { --ink:#1a1a2e; --panel:#fff8e6; --red:#e52521; --red-dark:#9c1410; --grass:#00a800; --grass-dark:#007000; --coin:#fcd000; --coin-dark:#c88000; --brick:#e5a04a; --brick-dark:#8a3a0a; --sky:#2b3a67; --px:4px;
-      --pixel-font:'Press Start 2P',monospace; --thai-font:'Mitr','Sarabun',system-ui,sans-serif; }
-    * { box-sizing: border-box; } [hidden] { display: none !important; }
-    body { margin:0; background: var(--sky); color: var(--ink); font-family: var(--thai-font); font-size:16px; line-height:1.55; }
-    .wrap { max-width: 860px; margin: 0 auto; padding: 28px 16px 60px; }
-    header { text-align:center; color:#fff; margin-bottom: 20px; }
-    header h1 { font-family: var(--pixel-font); font-size: 16px; margin:0 0 6px; text-shadow: 3px 3px 0 #000; }
-    header p { margin:0; opacity:.85; }
-    .panel { background: var(--panel); position: relative; margin-bottom: 22px; padding: 22px 20px 20px; border: var(--px) solid var(--ink); box-shadow: inset 0 0 0 var(--px) #fff, 8px 8px 0 #000; }
-    .panel h2 { position:absolute; top:-18px; left:16px; margin:0; background: var(--red); color:#fff; padding:6px 12px; font-size:15px; font-weight:600; border: var(--px) solid var(--ink); box-shadow: 4px 4px 0 var(--ink); }
-    .body { margin-top: 10px; }
-    label { display:block; font-size:14px; color:#5a4a3a; margin-bottom:4px; }
-    input, textarea { width:100%; font:inherit; padding:9px 11px; background:#fff; color:var(--ink); border: var(--px) solid var(--ink); box-shadow: inset 4px 4px 0 #e8e0cc; }
-    input:focus, textarea:focus { outline:none; box-shadow: inset 4px 4px 0 #e8e0cc, 0 0 0 var(--px) var(--coin); }
-    .pxbtn { font:inherit; font-weight:600; cursor:pointer; border: var(--px) solid var(--ink); padding: 9px 14px; background: var(--grass); color:#fff; box-shadow: 4px 4px 0 var(--ink); }
-    .pxbtn:active { translate: 4px 4px; box-shadow:none; } .pxbtn:disabled { opacity:.5; cursor:default; }
-    .pxbtn.ghost { background:#fff; color:var(--ink); } .pxbtn.danger { background: var(--red); }
-    .row { display:flex; gap:10px; flex-wrap:wrap; align-items:end; }
-    .row > * { flex:1 1 180px; } .row .pxbtn { flex: 0 0 auto; }
-    .status { display:flex; align-items:center; justify-content:space-between; gap:14px; padding:14px; border: var(--px) solid var(--ink); background:#fff; }
-    .status .dot { display:inline-block; width:14px; height:14px; margin-right:8px; vertical-align:-1px; }
-    .status.on .dot { background: var(--grass); } .status.off .dot { background: var(--red); }
-    .status strong { font-size:18px; }
-    .muted { color:#5a4a3a; font-size:14px; }
-    .alert { padding:12px 14px; margin: 0 0 14px; border: var(--px) solid var(--ink); white-space: pre-line; }
-    .alert.error { background:#ffd6d4; color: var(--red-dark); } .alert.ok { background:#dff5df; color: var(--grass-dark); }
+    :root {
+      --sky: #5c94fc;
+      --sky-deep: #3a6fd8;
+      --ground: #c84c0c;
+      --brick: #e5a04a;
+      --brick-dark: #8a3a0a;
+      --grass: #00a800;
+      --grass-dark: #007000;
+      --coin: #fcd000;
+      --coin-dark: #c88000;
+      --cloud: #ffffff;
+      --ink: #1a1a2e;
+      --panel: #fff8e6;
+      --red: #e52521;
+      --red-dark: #9c1410;
+      --px: 4px;                 /* ขนาด "พิกเซล" ของเส้นขอบ */
+      --pixel-font: 'Press Start 2P', monospace;
+      --thai-font: 'Mitr', 'Sarabun', system-ui, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    [hidden] { display: none !important; }   /* ให้ hidden ชนะ display:flex/inline-block */
+    html, body { margin: 0; }
+    body {
+      color: var(--ink);
+      font-family: var(--thai-font); font-size: 16px; line-height: 1.55;
+      background: var(--sky);
+      background-image:
+        linear-gradient(var(--sky) 0 60%, var(--sky-deep) 100%);
+      min-height: 100vh; position: relative; overflow-x: hidden;
+      image-rendering: pixelated;
+    }
+    /* ---------- ฉากหลัง 8-bit (canvas) ---------- */
+    #sky { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; image-rendering: pixelated; }
+    #fg { position: fixed; left: 0; right: 0; bottom: 0; width: 100%; height: 260px; z-index: 2; pointer-events: none; image-rendering: pixelated; }
+    @media (prefers-reduced-motion: reduce) { .coin-icon, .hero-sprite { animation: none !important; } }
 
-    .cal-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
-    .cal-head .month { font-weight:600; font-size:18px; }
-    .cal-head button { font-family: var(--pixel-font); font-size:12px; padding:10px 14px; }
-    .cal { display:grid; grid-template-columns: repeat(7,1fr); gap:6px; }
-    .dow { text-align:center; font-family: var(--pixel-font); font-size:9px; padding:6px 0; color:#5a4a3a; }
-    .day { aspect-ratio:1; position:relative; display:flex; align-items:center; justify-content:center; font-family: var(--pixel-font); font-size:12px; background:#e8e0cc; color:#9a8f7a; border: var(--px) solid transparent; }
+    .ground {
+      position: fixed; left: 0; right: 0; bottom: 0; height: 56px; z-index: 0;
+      background:
+        repeating-linear-gradient(90deg, var(--brick) 0 28px, var(--brick-dark) 28px 32px),
+        var(--brick);
+      border-top: var(--px) solid var(--ink);
+    }
+    .ground::before {
+      content: ''; position: absolute; left: 0; right: 0; top: 24px; height: var(--px);
+      background: repeating-linear-gradient(90deg, transparent 0 14px, var(--brick-dark) 14px 18px, transparent 18px 28px, var(--brick-dark) 28px 32px);
+    }
+    /* ---------- เลย์เอาต์ ---------- */
+    .wrap { position: relative; z-index: 1; max-width: 800px; margin: 0 auto; padding: 28px 16px 110px; }
+    header { text-align: center; margin-bottom: 22px; }
+    header h1 {
+      font-family: var(--pixel-font); font-size: clamp(14px, 3vw, 20px); color: #fff; margin: 0 0 14px;
+      text-shadow: 3px 3px 0 var(--ink); letter-spacing: 1px; line-height: 1.7;
+    }
+    header h1 .th { font-family: var(--thai-font); font-weight: 600; font-size: clamp(22px, 5vw, 34px); display: block; letter-spacing: 0; }
+    .hud {
+      display: inline-flex; gap: 18px; flex-wrap: wrap; justify-content: center;
+      background: var(--ink); color: #fff; padding: 10px 16px; font-family: var(--pixel-font); font-size: 10px;
+      box-shadow: 0 0 0 var(--px) #fff, 0 0 0 calc(var(--px)*2) var(--ink);
+    }
+    .hud span { display: inline-flex; align-items: center; gap: 8px; }
+    .hud .th { font-family: var(--thai-font); font-size: 14px; }
+    .coin-icon { width: 12px; height: 16px; background: var(--coin); box-shadow: inset -3px 0 0 var(--coin-dark); animation: spin 1.2s steps(4) infinite; }
+    @keyframes spin { 50% { width: 4px; } }
+
+    .panel {
+      background: var(--panel); position: relative; margin-bottom: 22px; padding: 22px 20px 20px;
+      border: var(--px) solid var(--ink);
+      box-shadow: inset 0 0 0 var(--px) #fff, 8px 8px 0 var(--ink);
+    }
+    .panel h2 {
+      position: absolute; top: -18px; left: 16px; margin: 0;
+      background: var(--red); color: #fff; padding: 6px 12px; font-size: 15px; font-weight: 600;
+      border: var(--px) solid var(--ink); box-shadow: 4px 4px 0 var(--ink);
+    }
+    .panel h2 small { font-weight: 400; opacity: .85; margin-left: 6px; font-size: 13px; }
+    .panel .body { margin-top: 10px; }
+
+    label { display: block; font-size: 14px; color: #5a4a3a; margin-bottom: 4px; }
+    input, textarea {
+      width: 100%; font: inherit; padding: 9px 11px; background: #fff; color: var(--ink);
+      border: var(--px) solid var(--ink); box-shadow: inset 4px 4px 0 #e8e0cc;
+    }
+    input:focus, textarea:focus { outline: none; box-shadow: inset 4px 4px 0 #e8e0cc, 0 0 0 var(--px) var(--coin); }
+    textarea { min-height: 120px; resize: vertical; }
+    .field { margin-bottom: 14px; } .field:last-child { margin-bottom: 0; }
+
+    .seg { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    @media (max-width: 560px) { .seg { grid-template-columns: 1fr; } }
+    .seg-btn {
+      font: inherit; font-weight: 600; padding: 11px 10px; cursor: pointer; background: #fff; color: var(--ink);
+      border: var(--px) solid var(--ink); box-shadow: 4px 4px 0 var(--ink);
+    }
+    .seg-btn.active { background: var(--grass); color: #fff; translate: 4px 4px; box-shadow: none; }
+    .ac { position: relative; }
+    .ac-list {
+      position: absolute; left: 0; right: 0; top: 100%; z-index: 20; max-height: 260px; overflow-y: auto;
+      background: #fff; border: var(--px) solid var(--ink); box-shadow: 6px 6px 0 var(--ink);
+    }
+    .ac-item { padding: 10px 12px; cursor: pointer; border-bottom: 2px solid #eee; }
+    .ac-item:last-child { border-bottom: none; }
+    .ac-item:hover, .ac-item.active { background: var(--coin); }
+    .ac-item .t { font-weight: 600; }
+    .ac-item .m { font-size: 13px; color: #5a4a3a; }
+    .ac-item.new .t { color: var(--grass-dark); }
+    .dup-warn {
+      margin-top: 8px; padding: 10px 12px; font-size: 14px; background: #ffd6d4; color: var(--red-dark);
+      border: var(--px) solid var(--ink); box-shadow: 3px 3px 0 var(--ink);
+    }
+    .dup-warn strong { font-weight: 600; }
+    .round-badge {
+      display: inline-block; margin-top: 8px; padding: 4px 10px; font-size: 13px; font-weight: 600;
+      background: var(--coin); border: var(--px) solid var(--ink); box-shadow: 3px 3px 0 var(--ink);
+    }
+    .round-badge button { background: none; border: none; font: inherit; color: var(--red); cursor: pointer; margin-left: 6px; text-decoration: underline; }
+    .member { display: grid; grid-template-columns: 150px 1fr 44px; gap: 8px; margin-bottom: 8px; align-items: center; }
+    .member button { height: 44px; border: var(--px) solid var(--ink); background: #fff; cursor: pointer; color: var(--red); font-family: var(--pixel-font); font-size: 12px; box-shadow: 3px 3px 0 var(--ink); }
+    .member button:active { translate: 3px 3px; box-shadow: none; }
+    .pxbtn {
+      font: inherit; font-weight: 600; cursor: pointer; border: var(--px) solid var(--ink);
+      padding: 9px 14px; background: var(--grass); color: #fff; box-shadow: 4px 4px 0 var(--ink);
+    }
+    .pxbtn:active { translate: 4px 4px; box-shadow: none; }
+    .pxbtn.wide { width: 100%; }
+    .pxbtn.ghost { background: #fff; color: var(--ink); }
+    .pxbtn.line { background: #06c755; text-decoration: none; display: inline-block; }
+
+    .line-box { display: flex; gap: 16px; align-items: center; margin-top: 18px; padding: 14px; border: var(--px) dashed var(--ink); background: #fff; }
+    .line-box img { width: 140px; height: 140px; flex-shrink: 0; border: var(--px) solid var(--ink); }
+    .line-box p { margin: 4px 0 10px; font-size: 14px; color: #5a4a3a; }
+    .line-box strong { font-weight: 600; }
+
+    /* ---------- ปฏิทิน ---------- */
+    .cal-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+    .cal-head .month { font-family: var(--thai-font); font-weight: 600; font-size: 18px; }
+    .cal-head button { font-family: var(--pixel-font); font-size: 12px; padding: 10px 14px; }
+    .cal-head button:disabled { opacity: .35; cursor: default; translate: 0; box-shadow: 4px 4px 0 var(--ink); }
+    .cal { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+    .cal .dow { text-align: center; font-family: var(--pixel-font); font-size: 9px; padding: 6px 0; color: #5a4a3a; }
+    .cal .dow.hot { color: var(--red); }
+    .day {
+      aspect-ratio: 1; display: flex; align-items: center; justify-content: center; position: relative;
+      font-family: var(--pixel-font); font-size: 12px; background: #e8e0cc; color: #9a8f7a; border: var(--px) solid transparent;
+    }
     .day.blank { background: transparent; }
-    .day.open { background: var(--brick); color: var(--ink); border-color: var(--ink); cursor:pointer; box-shadow: inset -4px -4px 0 var(--brick-dark), 3px 3px 0 var(--ink); }
+    .day.open {
+      background: var(--brick); color: var(--ink); border-color: var(--ink); cursor: pointer;
+      box-shadow: inset -4px -4px 0 var(--brick-dark), 3px 3px 0 var(--ink);
+    }
     .day.open:hover { background: var(--coin); box-shadow: inset -4px -4px 0 var(--coin-dark), 3px 3px 0 var(--ink); }
-    .day.closed { background: var(--red); color:#fff; border-color: var(--ink); cursor:pointer; box-shadow: inset -4px -4px 0 var(--red-dark), 3px 3px 0 var(--ink); }
-    .day.closed::after { content:'✕'; position:absolute; top:3px; right:5px; font-size:9px; }
-    .day.past { opacity:.45; cursor:default; box-shadow:none; }
-    .day.today { outline: 3px dashed var(--ink); outline-offset: -3px; }
-    .day .n { position:absolute; bottom:3px; left:0; right:0; text-align:center; font-family: var(--thai-font); font-size:11px; font-weight:600; color: var(--ink); }
-    .day.closed .n { color:#fff; }
-    .legend { display:flex; gap:14px; flex-wrap:wrap; margin-top:12px; font-size:13px; color:#5a4a3a; }
-    .legend i { display:inline-block; width:14px; height:14px; vertical-align:-2px; margin-right:6px; border:2px solid var(--ink); }
-    .daylist { margin-top:16px; }
-    .daylist h3 { font-size:16px; margin:0 0 8px; }
-    .bk { padding:8px 10px; border-left: 6px solid var(--grass); background:#fff; margin-bottom:6px; font-size:14px; }
-    .bk b { font-family: var(--pixel-font); font-size:10px; margin-right:8px; }
-    @media (max-width:560px){ .day{font-size:10px;} .cal{gap:4px;} .panel{box-shadow: inset 0 0 0 var(--px) #fff, 5px 5px 0 #000;} }
+    .day.selected { background: var(--grass); color: #fff; box-shadow: inset -4px -4px 0 var(--grass-dark), 3px 3px 0 var(--ink); }
+    .day.today::after { content: ''; position: absolute; top: 4px; left: 4px; width: 6px; height: 6px; background: var(--red); }
+    .day.open:active { translate: 3px 3px; box-shadow: inset -4px -4px 0 var(--brick-dark); }
+
+    .legend { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 12px; font-size: 13px; color: #5a4a3a; }
+    .legend i { display: inline-block; width: 14px; height: 14px; vertical-align: -2px; margin-right: 6px; border: 2px solid var(--ink); }
+
+    /* ---------- ช่องเวลา ---------- */
+    .slot-title { font-weight: 600; margin: 20px 0 12px; display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 17px; }
+    .slots { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+    .slot { display: block; }
+    .slot input { position: absolute; opacity: 0; width: 0; height: 0; }
+    .slot span {
+      display: block; text-align: center; padding: 10px 8px; border: var(--px) solid var(--ink); background: #fff;
+      cursor: pointer; font-family: var(--thai-font); font-size: 18px; font-weight: 600; letter-spacing: .5px;
+      font-variant-numeric: tabular-nums; box-shadow: 3px 3px 0 var(--ink); user-select: none;
+    }
+    .slot:hover span { background: var(--coin); }
+    .slot input:checked + span { background: var(--red); color: #fff; }
+    .slot input:focus-visible + span { outline: var(--px) solid var(--coin); }
+    .muted { color: #5a4a3a; font-size: 14px; }
+
+    .alert { padding: 12px 14px; margin-bottom: 14px; white-space: pre-line; border: var(--px) solid var(--ink); }
+    .alert.error { background: #ffd6d4; color: var(--red-dark); }
+    .submit { font-size: 18px; padding: 16px; background: var(--red); font-weight: 600; }
+    .submit:disabled { opacity: .6; cursor: progress; }
+    .submit .px { font-family: var(--pixel-font); font-size: 12px; margin-right: 10px; }
+
+    /* ---------- สำเร็จ ---------- */
+    .success { text-align: center; padding: 36px 20px 30px; }
+    .success h2 { position: static; display: inline-block; font-family: var(--pixel-font); font-size: 14px; background: var(--grass); margin-bottom: 18px; }
+    .success p { margin: 6px 0; }
+    .hero-sprite { width: 64px; height: 64px; margin: 0 auto 6px; image-rendering: pixelated; animation: hop 1s steps(2) infinite; }
+    @keyframes hop { 50% { translate: 0 -10px; } }
+
+    .skeleton { height: 36px; width: 84px; background: #e8e0cc; display: inline-block; margin: 0 8px 8px 0; border: var(--px) solid #d0c6ae; }
+    footer { text-align: center; color: #fff; font-family: var(--pixel-font); font-size: 9px; margin-top: 30px; text-shadow: 2px 2px 0 var(--ink); }
+
+    @media (max-width: 560px) {
+      .member { grid-template-columns: 1fr; } .member button { width: 100%; }
+      .line-box { flex-direction: column; text-align: center; }
+      .day { font-size: 10px; } .cal { gap: 4px; }
+      .slots { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+      .slot span { font-size: 16px; }
+      .panel { box-shadow: inset 0 0 0 var(--px) #fff, 5px 5px 0 var(--ink); }
+    }
   </style>
 </head>
 <body>
+<canvas id="sky" aria-hidden="true"></canvas>
+<canvas id="fg" aria-hidden="true"></canvas>
+<div class="ground"></div>
+
 <div class="wrap">
   <header>
-    <h1>AjGolf Connect · TEACHER</h1>
-    <p>ปิด/เปิดวันเข้าพบ · หยุดรับจองชั่วคราว · กำหนดวันปิดรับ</p>
+    <h1>AjGolf Connect<span class="th">จองคิวเข้าพบอาจารย์</span></h1>
+    <div class="hud">
+      <span><i class="coin-icon"></i> 30 MIN</span>
+      <span class="th">จันทร์ · พฤหัส · ศุกร์</span>
+      <span>09:00–12:00 · 14:00–17:00</span>
+      <span class="th" id="openUntil"></span>
+    </div>
   </header>
 
-  <!-- ล็อกอิน -->
-  <section class="panel" id="loginView">
-    <h2>LOGIN</h2>
-    <div class="body">
-      <div id="loginErr" class="alert error" hidden></div>
-      <div class="row">
-        <div><label for="pin">รหัสผ่านหน้าอาจารย์</label><input id="pin" type="password" inputmode="numeric" autocomplete="current-password" placeholder="ดูได้จาก Google Sheet → เมนู AjGolf Connect → ดูรหัสผ่าน"></div>
-        <button class="pxbtn" id="loginBtn">เข้าสู่ระบบ</button>
-      </div>
-      <p class="muted" style="margin:10px 0 0">รหัสผ่านอยู่ที่แท็บ <b>Settings</b> ของ Google Sheet เปลี่ยนได้ตลอด</p>
-    </div>
-  </section>
-
-  <div id="app" hidden>
-    <div id="msg" class="alert ok" hidden></div>
-
+  <div id="closedBanner" class="alert error" style="font-size:17px;text-align:center" hidden></div>
+  <div id="formView">
     <section class="panel">
-      <h2>สถานะการรับจอง</h2>
+      <h2>WORLD 1 · ข้อมูลโครงงาน</h2>
       <div class="body">
-        <div class="status" id="statusBox">
-          <div><span class="dot"></span><strong id="statusText">…</strong><div class="muted" id="statusSub"></div></div>
-          <button class="pxbtn" id="toggleEnabled">…</button>
+        <div class="field">
+          <label>ประเภทการเข้าพบ *</label>
+          <div class="seg" role="radiogroup">
+            <button type="button" class="seg-btn active" id="visitFirst" role="radio" aria-checked="true">1ST · เข้าพบครั้งแรก เสนอหัวข้อโครงงาน</button>
+            <button type="button" class="seg-btn" id="visitNext" role="radio" aria-checked="false">NEXT · อัพเดทความคืบหน้าโครงงาน</button>
+          </div>
         </div>
-        <div style="margin-top:14px">
-          <label for="notice">ข้อความที่นักศึกษาจะเห็นตอนปิดรับ</label>
-          <div class="row"><input id="notice"><button class="pxbtn ghost" id="saveNotice">บันทึกข้อความ</button></div>
+        <div class="field ac">
+          <label for="topic" id="topicLabel">หัวข้อโครงงาน <span class="muted">(ถ้ามี)</span></label>
+          <input id="topic" maxlength="200" placeholder="เช่น ระบบจัดการคลังสินค้าด้วย RFID" autocomplete="off">
+          <div class="ac-list" id="topicList" hidden></div>
+          <div class="round-badge" id="roundBadge" hidden></div>
+          <div class="dup-warn" id="dupWarn" hidden></div>
+        </div>
+        <div class="field">
+          <label for="desc" id="descLabel">ลักษณะของโครงงาน ขอบเขต หรือสิ่งที่ต้องการทำ *</label>
+          <textarea id="desc" required placeholder="อธิบายปัญหาที่ต้องการแก้ กลุ่มผู้ใช้ เทคโนโลยีที่คิดจะใช้ และสิ่งที่อยากปรึกษา"></textarea>
         </div>
       </div>
     </section>
 
     <section class="panel">
-      <h2>เปิดจองถึงวันที่</h2>
+      <h2>WORLD 2 · สมาชิกกลุ่ม <small id="memberHint"></small></h2>
       <div class="body">
-        <div class="row">
-          <div><label for="endDate">นักศึกษาจองได้ถึงวันที่</label><input id="endDate" type="date"></div>
-          <button class="pxbtn ghost" id="saveEnd">บันทึก</button>
-          <button class="pxbtn" id="extendMonth">+1 เดือน</button>
+        <div id="members"></div>
+        <button type="button" class="pxbtn ghost wide" id="addMember">+ เพิ่มสมาชิก</button>
+
+        <div class="line-box" id="lineBox">
+          <img src="data:image/png;base64,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" alt="QR code กลุ่ม LINE">
+          <div>
+            <strong>เข้ากลุ่ม LINE เพื่อรับข้อมูลข่าวสาร</strong>
+            <p>สแกน QR หรือกดปุ่ม (ถ้าเปิดจากมือถือ)</p>
+            <a class="pxbtn line" href="https://line.me/ti/g/SehdFCAQh7" target="_blank" rel="noopener">เข้ากลุ่ม LINE</a>
+          </div>
         </div>
-        <p class="muted" style="margin:10px 0 0">กฎจองล่วงหน้า: นักศึกษาต้องจองล่วงหน้าอย่างน้อย <b id="leadDays">2</b> วัน (วันนี้ <span id="todayLabel"></span>)</p>
       </div>
     </section>
 
     <section class="panel">
-      <h2>ปิด/เปิดวันเข้าพบ</h2>
+      <h2>WORLD 3 · เลือกวันและเวลา</h2>
       <div class="body">
-        <p class="muted" style="margin:0 0 10px">คลิกวันเพื่อสลับ <b>เปิด ↔ ปิดรับ</b> · ตัวเลขใต้วันคือจำนวนกลุ่มที่จองแล้ว (ปิดวันที่มีคนจองไว้ ระบบจะเตือน การจองเดิมยังอยู่ ต้องแจ้งนักศึกษาเอง)</p>
         <div class="cal-head">
-          <button type="button" class="pxbtn ghost" id="prevMonth">&lt;</button>
-          <div class="month" id="monthLabel"></div>
-          <button type="button" class="pxbtn ghost" id="nextMonth">&gt;</button>
+          <button type="button" class="pxbtn ghost" id="prevMonth" aria-label="เดือนก่อนหน้า">&lt;</button>
+          <div class="month" id="monthLabel">…</div>
+          <button type="button" class="pxbtn ghost" id="nextMonth" aria-label="เดือนถัดไป">&gt;</button>
         </div>
         <div class="cal" id="cal"></div>
         <div class="legend">
-          <span><i style="background:var(--brick)"></i>เปิดรับ</span>
-          <span><i style="background:var(--red)"></i>ปิดรับ</span>
-          <span><i style="background:#e8e0cc;border-color:#d0c6ae"></i>ไม่ใช่วันเข้าพบ</span>
+          <span><i style="background:var(--brick)"></i>มีคิวว่าง</span>
+          <span><i style="background:var(--grass)"></i>วันที่เลือก</span>
+          <span><i style="background:#e8e0cc;border-color:#d0c6ae"></i>ไม่เปิดจอง</span>
         </div>
-        <div class="daylist" id="daylist"></div>
+
+        <div id="slotBlock" hidden>
+          <div class="slot-title"><span id="slotDate"></span><button type="button" class="pxbtn ghost" style="padding:4px 10px;font-size:13px" id="reload">รีเฟรช</button></div>
+          <div class="slots" id="slotArea"></div>
+        </div>
+        <p class="muted" id="slotHint" style="margin-top:14px">เลือกวันที่บนปฏิทินเพื่อดูช่วงเวลาที่ว่าง</p>
       </div>
     </section>
+
+    <div id="error" class="alert error" hidden></div>
+    <button class="pxbtn wide submit" id="submit"><span class="px">START ▶</span>ยืนยันการจอง</button>
   </div>
+
+  <section id="successView" class="panel success" hidden>
+    <svg class="hero-sprite" viewBox="0 0 16 16" shape-rendering="crispEdges" aria-hidden="true">
+      <!-- ตัวละครพิกเซลต้นฉบับ: นักศึกษาหมวกแก๊ปถือแฟ้ม -->
+      <rect x="5" y="1" width="6" height="1" fill="#1a1a2e"/><rect x="4" y="2" width="8" height="2" fill="#0d6e6e"/>
+      <rect x="3" y="3" width="10" height="1" fill="#0d6e6e"/>
+      <rect x="5" y="4" width="6" height="3" fill="#ffd9b3"/><rect x="6" y="5" width="1" height="1" fill="#1a1a2e"/><rect x="9" y="5" width="1" height="1" fill="#1a1a2e"/>
+      <rect x="5" y="7" width="6" height="4" fill="#5c94fc"/><rect x="3" y="8" width="2" height="3" fill="#ffd9b3"/><rect x="11" y="8" width="3" height="4" fill="#fcd000"/>
+      <rect x="11" y="9" width="3" height="1" fill="#c88000"/>
+      <rect x="5" y="11" width="2" height="3" fill="#1a1a2e"/><rect x="9" y="11" width="2" height="3" fill="#1a1a2e"/>
+      <rect x="4" y="14" width="3" height="1" fill="#8a3a0a"/><rect x="9" y="14" width="3" height="1" fill="#8a3a0a"/>
+    </svg>
+    <h2>STAGE CLEAR!</h2>
+    <p style="font-size:18px;font-weight:600" id="okWhen"></p>
+    <p id="okTopic" class="muted"></p>
+    <p class="muted">รหัสการจอง <strong id="okId"></strong></p>
+    <p class="muted" style="margin-top:14px" id="okLineMsg">บันทึกลงปฏิทินอาจารย์แล้ว อย่าลืมเข้ากลุ่ม LINE เพื่อรับการติดต่อกลับ</p>
+    <p style="margin-top:10px" id="okLine"><a class="pxbtn line" href="https://line.me/ti/g/SehdFCAQh7" target="_blank" rel="noopener">เข้ากลุ่ม LINE</a></p>
+    <p style="margin-top:18px"><button type="button" class="pxbtn ghost" onclick="location.reload()">CONTINUE? จองคิวอีกกลุ่ม</button></p>
+  </section>
+
+  <footer>PRESS START TO BOOK</footer>
 </div>
 
 <script>
-  // ===== URL ของ Apps Script Web App (ตัวเดียวกับ index.html) =====
+  // ===== URL ของ Apps Script Web App (ลงท้ายด้วย /exec) =====
   const API_URL = 'https://script.google.com/macros/s/AKfycbw2eb5jbprYxguLcRn4fAt7qwucdYYDVAgU0tpLpQipJsKHgHGLJLjnwO45vfM-KBdt/exec';
-  // =================================================================
+  // ===========================================================
+
+  let cfg = { maxMembers: 5, slotMinutes: 30, weeksAhead: 4 };
+  let slotMap = {};          // 'yyyy-mm-dd' -> { dateLabel, slots[] }
+  let selectedDate = null;
+  let viewYear, viewMonth;   // เดือนที่แสดงในปฏิทิน
   const $ = id => document.getElementById(id);
   const TH_MONTHS = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
-  const TH_DAYS = ['อาทิตย์','จันทร์','อังคาร','พุธ','พฤหัสบดี','ศุกร์','เสาร์'];
   const DOW = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
-  let pin = sessionStorage.getItem('ajgolf_pin') || '';
-  let state = null, viewYear, viewMonth, selectedDay = null;
 
-  async function api(op, extra) {
-    const res = await fetch(API_URL, { method: 'POST', redirect: 'follow', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify(Object.assign({ action: 'admin', pin, op }, extra || {})) });
+  async function apiGet(action) {
+    const res = await fetch(`${API_URL}?action=${action}`, { method: 'GET', redirect: 'follow' });
     return res.json();
   }
-  function flash(text, isErr) { const m = $('msg'); m.textContent = text; m.className = 'alert ' + (isErr ? 'error' : 'ok'); m.hidden = false; clearTimeout(flash.t); flash.t = setTimeout(() => m.hidden = true, 3500); }
-  const keyOf = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-  const thaiDate = k => { const [y,m,d] = k.split('-').map(Number); const dt = new Date(y, m-1, d); return `${TH_DAYS[dt.getDay()]} ${d} ${TH_MONTHS[m-1].slice(0,3)}. ${y+543}`; };
+  async function apiPost(payload) {
+    // text/plain เพื่อเลี่ยง CORS preflight (Apps Script ไม่รองรับ OPTIONS)
+    const res = await fetch(API_URL, {
+      method: 'POST', redirect: 'follow',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(payload),
+    });
+    return res.json();
+  }
 
-  // ---- login ----
-  async function login() {
-    $('loginBtn').disabled = true;
+  apiGet('config').then(r => {
+    if (r.ok) {
+      cfg = r.config; $('memberHint').textContent = `ไม่เกิน ${cfg.maxMembers} คน`;
+      if (cfg.openUntil) $('openUntil').textContent = `เปิดจองถึง ${cfg.openUntil}`;
+      if (cfg.enabled === false) {
+        $('closedBanner').textContent = '⏸ ' + (cfg.notice || 'ขณะนี้ปิดรับการจองชั่วคราว');
+        $('closedBanner').hidden = false; $('submit').disabled = true;
+      }
+    }
+  }).catch(() => {});
+
+  // ---- หัวข้อที่เคยเข้าพบ (autocomplete) ----
+  let topics = [], selectedTopic = null, acIndex = -1;
+  apiGet('topics').then(r => { if (r.ok) topics = r.topics; }).catch(() => {});
+
+  const topicInput = $('topic'), topicList = $('topicList');
+  let visitMode = 'first';   // 'first' | 'next'
+  const DESC_FIRST = 'ลักษณะของโครงงาน ขอบเขต หรือสิ่งที่ต้องการทำ *';
+  const DESC_NEXT = 'สิ่งที่ต้องการปรึกษาในรอบนี้ / ความคืบหน้า *';
+  function setMode(mode) {
+    visitMode = mode;
+    const first = mode === 'first';
+    $('visitFirst').classList.toggle('active', first); $('visitFirst').setAttribute('aria-checked', first);
+    $('visitNext').classList.toggle('active', !first); $('visitNext').setAttribute('aria-checked', !first);
+    selectedTopic = null; topicInput.value = ''; topicList.hidden = true; $('roundBadge').hidden = true; $('dupWarn').hidden = true;
+    $('members').innerHTML = ''; addMemberRow(false);
+    $('lineBox').hidden = !first;   // กลุ่มที่มาแล้วอยู่ในกลุ่ม LINE แล้ว
+    if (first) {
+      $('topicLabel').innerHTML = 'หัวข้อโครงงาน <span class="muted">(ถ้ามี)</span>';
+      topicInput.placeholder = 'เช่น ระบบจัดการคลังสินค้าด้วย RFID';
+      $('descLabel').textContent = DESC_FIRST;
+    } else {
+      $('topicLabel').innerHTML = 'เลือกหัวข้อที่เคยเข้าพบ * <span class="muted">(พิมพ์เพื่อค้นหา)</span>';
+      topicInput.placeholder = topics.length ? 'พิมพ์หรือคลิกเพื่อเลือกหัวข้อ…' : 'ยังไม่มีหัวข้อที่เคยเข้าพบ';
+      $('descLabel').textContent = DESC_NEXT;
+      topicInput.focus();
+    }
+  }
+  $('visitFirst').onclick = () => setMode('first');
+  $('visitNext').onclick = () => setMode('next');
+
+  const normTopic = t => String(t || '').trim().replace(/\s+/g, ' ').toLowerCase();
+  function duplicateOf(topicText) {
+    const k = normTopic(topicText); if (!k) return null;
+    return topics.find(t => normTopic(t.topic) === k) || null;
+  }
+  function checkDuplicate() {
+    if (visitMode !== 'first') { $('dupWarn').hidden = true; return null; }
+    const dup = duplicateOf(topicInput.value);
+    if (dup) {
+      $('dupWarn').innerHTML = `⚠ <strong>มีกลุ่มที่ทำหัวข้อโครงงานนี้ไปแล้ว</strong> (${esc(dup.members.map(m => m.name).join(', ') || 'ไม่ระบุสมาชิก')} · เข้าพบล่าสุด ${esc(dup.lastDate)})<br>ถ้าเป็นกลุ่มเดียวกัน ให้เลือก "NEXT · อัพเดทความคืบหน้าโครงงาน" · ถ้าเป็นกลุ่มใหม่ กรุณาใช้ชื่อหัวข้ออื่น`;
+      $('dupWarn').hidden = false;
+    } else $('dupWarn').hidden = true;
+    return dup;
+  }
+  function renderTopicList() {
+    if (visitMode !== 'next') { topicList.hidden = true; return; }
+    const q = topicInput.value.trim().toLowerCase();
+    const hits = topics.filter(t => !q || t.topic.toLowerCase().includes(q)).slice(0, 8);
+    if (!hits.length) { topicList.hidden = true; return; }
+    topicList.innerHTML = hits.map((t, i) => `
+      <div class="ac-item${i === acIndex ? ' active' : ''}" data-i="${i}">
+        <div class="t">${esc(t.topic)}</div>
+        <div class="m">เข้าพบแล้ว ${t.rounds} รอบ · ล่าสุด ${esc(t.lastDate)} · ${t.members.map(m => esc(m.name)).join(', ')}</div>
+      </div>`).join('');
+    topicList.querySelectorAll('.ac-item').forEach(el => el.onmousedown = ev => { ev.preventDefault(); chooseTopic(hits[+el.dataset.i]); });
+    topicList.hidden = false;
+  }
+  function chooseTopic(t) {
+    selectedTopic = t; acIndex = -1;
+    topicInput.value = t.topic;
+    topicList.hidden = true;
+    // เติมสมาชิกจากรอบก่อน
+    $('members').innerHTML = '';
+    (t.members.length ? t.members : [{ id: '', name: '' }]).forEach(m => { addMemberRow(false); const row = $('members').lastElementChild; row.querySelector('.m-id').value = m.id; row.querySelector('.m-name').value = m.name; });
+    $('roundBadge').textContent = `▶ อัพเดทความคืบหน้าครั้งที่ ${t.rounds + 1}`;
+    $('roundBadge').hidden = false;
+  }
+  topicInput.addEventListener('input', () => { checkDuplicate(); acIndex = -1; if (selectedTopic && topicInput.value.trim() !== selectedTopic.topic) { selectedTopic = null; $('roundBadge').hidden = true; } renderTopicList(); });
+  topicInput.addEventListener('focus', renderTopicList);
+  topicInput.addEventListener('blur', () => setTimeout(() => { topicList.hidden = true; }, 120));
+  topicInput.addEventListener('keydown', ev => {
+    const items = topicList.querySelectorAll('.ac-item');
+    if (topicList.hidden || !items.length) return;
+    if (ev.key === 'ArrowDown') { ev.preventDefault(); acIndex = (acIndex + 1) % items.length; renderTopicList(); }
+    else if (ev.key === 'ArrowUp') { ev.preventDefault(); acIndex = (acIndex - 1 + items.length) % items.length; renderTopicList(); }
+    else if (ev.key === 'Enter' && acIndex >= 0) { ev.preventDefault(); items[acIndex].dispatchEvent(new MouseEvent('mousedown')); }
+    else if (ev.key === 'Escape') topicList.hidden = true;
+  });
+  function esc(x) { return String(x).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
+
+  // ---- สมาชิก ----
+  function addMemberRow(focus) {
+    if ($('members').children.length >= cfg.maxMembers) return;
+    const div = document.createElement('div');
+    div.className = 'member';
+    div.innerHTML = `
+      <input class="m-id" placeholder="รหัสนักศึกษา" inputmode="numeric" aria-label="รหัสนักศึกษา">
+      <input class="m-name" placeholder="ชื่อ-สกุล" aria-label="ชื่อ-สกุล">
+      <button type="button" title="ลบ" aria-label="ลบสมาชิก">X</button>`;
+    div.querySelector('button').onclick = () => { if ($('members').children.length > 1) div.remove(); updateAddBtn(); };
+    $('members').appendChild(div);
+    if (focus) div.querySelector('.m-id').focus();
+    updateAddBtn();
+  }
+  function updateAddBtn() { $('addMember').hidden = $('members').children.length >= cfg.maxMembers; }
+  $('addMember').onclick = () => addMemberRow(true);
+  addMemberRow(false);
+  setMode('first');
+
+  // ---- โหลดข้อมูลคิวว่าง ----
+  async function loadSlots(keepSelection) {
+    $('cal').innerHTML = '<div class="muted" style="grid-column:1/-1;text-align:center;padding:20px">LOADING…</div>';
     try {
-      const r = await api('state');
-      if (!r.ok) { $('loginErr').textContent = r.error || 'เข้าสู่ระบบไม่สำเร็จ'; $('loginErr').hidden = false; return; }
-      sessionStorage.setItem('ajgolf_pin', pin);
-      $('loginView').hidden = true; $('app').hidden = false;
-      apply(r);
-    } catch (e) { $('loginErr').textContent = 'ติดต่อเซิร์ฟเวอร์ไม่ได้: ' + e.message; $('loginErr').hidden = false; }
-    finally { $('loginBtn').disabled = false; }
+      const r = await apiGet('slots');
+      if (!r.ok) throw new Error(r.error);
+      if (!r.days.length) { $('cal').innerHTML = `<div class="muted" style="grid-column:1/-1;text-align:center;padding:20px">${cfg.enabled === false ? 'ปิดรับการจองชั่วคราว' : 'ยังไม่มีช่วงเวลาว่างในช่วงที่เปิดจอง'}</div>`; return; }
+      slotMap = {};
+      r.days.forEach(d => { slotMap[d.dateKey] = d; });
+      if (!keepSelection || !slotMap[selectedDate]) {
+        selectedDate = null;
+        const first = r.days[0];
+        if (first) { const [y, m] = first.dateKey.split('-').map(Number); viewYear = y; viewMonth = m - 1; }
+        else { const t = new Date(); viewYear = t.getFullYear(); viewMonth = t.getMonth(); }
+      }
+      renderCalendar();
+      if (selectedDate) renderSlots(selectedDate); else { $('slotBlock').hidden = true; $('slotHint').hidden = false; }
+    } catch (e) {
+      $('cal').innerHTML = `<div class="alert error" style="grid-column:1/-1">โหลดเวลาว่างไม่สำเร็จ: ${e.message}</div>`;
+    }
   }
-  $('loginBtn').onclick = () => { pin = $('pin').value.trim(); login(); };
-  $('pin').addEventListener('keydown', e => { if (e.key === 'Enter') $('loginBtn').click(); });
-  if (pin) login();
 
-  // ---- render ----
-  function apply(r) {
-    state = r;
-    const on = r.enabled;
-    $('statusBox').className = 'status ' + (on ? 'on' : 'off');
-    $('statusText').textContent = on ? 'เปิดรับการจอง' : 'ปิดรับการจองชั่วคราว';
-    $('statusSub').textContent = on ? 'นักศึกษาจองคิวได้ตามปกติ' : 'หน้านักศึกษาจะไม่แสดงช่องเวลาและกดจองไม่ได้';
-    $('toggleEnabled').textContent = on ? 'หยุดรับจองชั่วคราว' : 'เปิดรับจองอีกครั้ง';
-    $('toggleEnabled').className = 'pxbtn ' + (on ? 'danger' : '');
-    $('notice').value = r.notice || '';
-    $('endDate').value = r.openUntil;
-    $('leadDays').textContent = r.minLeadDays; $('todayLabel').textContent = thaiDate(r.today);
-    if (viewYear === undefined) { const [y, m] = r.today.split('-').map(Number); viewYear = y; viewMonth = m - 1; }
-    renderCal();
-  }
-  function renderCal() {
-    const cal = $('cal'); cal.innerHTML = '';
+  // ---- ปฏิทิน ----
+  function renderCalendar() {
+    const cal = $('cal');
+    cal.innerHTML = '';
     $('monthLabel').textContent = `${TH_MONTHS[viewMonth]} ${viewYear + 543}`;
-    DOW.forEach(d => { const el = document.createElement('div'); el.className = 'dow'; el.textContent = d; cal.appendChild(el); });
-    const first = new Date(viewYear, viewMonth, 1), dim = new Date(viewYear, viewMonth + 1, 0).getDate();
+    DOW.forEach((d, i) => {
+      const el = document.createElement('div'); el.className = 'dow' + ([1, 4, 5].includes(i) ? ' hot' : ''); el.textContent = d; cal.appendChild(el);
+    });
+    const first = new Date(viewYear, viewMonth, 1);
+    const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+    const todayKey = keyOf(new Date());
     for (let i = 0; i < first.getDay(); i++) { const b = document.createElement('div'); b.className = 'day blank'; cal.appendChild(b); }
-    for (let d = 1; d <= dim; d++) {
-      const dt = new Date(viewYear, viewMonth, d), key = keyOf(dt);
-      const el = document.createElement('div'); el.className = 'day'; el.textContent = d;
-      const isOpenDow = state.openDays.includes(dt.getDay());
-      const n = (state.bookings[key] || []).length;
-      if (key === state.today) el.classList.add('today');
-      if (isOpenDow) {
-        const closed = key in state.holidays;
-        el.classList.add(closed ? 'closed' : 'open');
-        if (key < state.today) el.classList.add('past');
-        if (n) { const b = document.createElement('span'); b.className = 'n'; b.textContent = `${n} กลุ่ม`; el.appendChild(b); }
-        el.onclick = () => onDayClick(key, closed, n);
-      } else if (n) { const b = document.createElement('span'); b.className = 'n'; b.textContent = `${n}`; el.appendChild(b); }
+    for (let d = 1; d <= daysInMonth; d++) {
+      const key = keyOf(new Date(viewYear, viewMonth, d));
+      const el = document.createElement('div');
+      el.className = 'day' + (key === todayKey ? ' today' : '');
+      el.textContent = d;
+      const info = slotMap[key];
+      if (info && info.slots.length) {
+        el.classList.add('open');
+        el.setAttribute('role', 'button'); el.tabIndex = 0;
+        if (key === selectedDate) el.classList.add('selected');
+        el.onclick = () => selectDate(key);
+        el.onkeydown = ev => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); selectDate(key); } };
+      }
       cal.appendChild(el);
     }
-    renderDayList();
+    // ปุ่มเดือน: ให้เลื่อนได้เฉพาะช่วงที่มีข้อมูล
+    const keys = Object.keys(slotMap).sort();
+    const minM = keys.length ? keys[0].slice(0, 7) : null, maxM = keys.length ? keys[keys.length - 1].slice(0, 7) : null;
+    const cur = `${viewYear}-${String(viewMonth + 1).padStart(2, '0')}`;
+    $('prevMonth').disabled = !minM || cur <= minM;
+    $('nextMonth').disabled = !maxM || cur >= maxM;
   }
-  function renderDayList() {
-    const box = $('daylist');
-    if (!selectedDay) { box.innerHTML = ''; return; }
-    const list = state.bookings[selectedDay] || [];
-    box.innerHTML = `<h3>${thaiDate(selectedDay)} ${selectedDay in state.holidays ? '· <span style="color:var(--red)">ปิดรับ</span>' : ''}</h3>` +
-      (list.length ? list.map(b => `<div class="bk"><b>${b.time}</b>${esc(b.topic)}<div class="muted">${esc(b.members).replace(/\n/g, ' · ')}</div></div>`).join('') : '<p class="muted">ยังไม่มีการจองในวันนี้</p>');
-  }
-  async function onDayClick(key, closed, n) {
-    selectedDay = key; renderDayList();
-    if (key < state.today) return;                       // วันที่ผ่านแล้ว ดูอย่างเดียว
-    if (!closed && n && !confirm(`วันนี้มี ${n} กลุ่มจองไว้แล้ว ต้องการปิดรับหรือไม่?\n(การจองเดิมยังอยู่ ต้องแจ้งนักศึกษาเอง)`)) return;
-    const r = await api('toggleDay', { date: key });
-    if (!r.ok) return flash(r.error, true);
-    apply(r); flash(`${thaiDate(key)} → ${key in r.holidays ? 'ปิดรับแล้ว' : 'เปิดรับแล้ว'}`);
-  }
-  $('prevMonth').onclick = () => { viewMonth--; if (viewMonth < 0) { viewMonth = 11; viewYear--; } renderCal(); };
-  $('nextMonth').onclick = () => { viewMonth++; if (viewMonth > 11) { viewMonth = 0; viewYear++; } renderCal(); };
+  function keyOf(d) { return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; }
+  $('prevMonth').onclick = () => { viewMonth--; if (viewMonth < 0) { viewMonth = 11; viewYear--; } renderCalendar(); };
+  $('nextMonth').onclick = () => { viewMonth++; if (viewMonth > 11) { viewMonth = 0; viewYear++; } renderCalendar(); };
 
-  // ---- actions ----
-  $('toggleEnabled').onclick = async () => {
-    const next = !state.enabled;
-    if (!next && !confirm('หยุดรับจองชั่วคราว? นักศึกษาจะจองไม่ได้จนกว่าจะเปิดอีกครั้ง')) return;
-    const r = await api('setEnabled', { enabled: next }); if (!r.ok) return flash(r.error, true);
-    apply(r); flash(next ? 'เปิดรับจองแล้ว' : 'หยุดรับจองชั่วคราวแล้ว');
+  function selectDate(key) {
+    selectedDate = key;
+    renderCalendar();
+    renderSlots(key);
+    $('slotBlock').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+  function renderSlots(key) {
+    const info = slotMap[key];
+    $('slotHint').hidden = true;
+    $('slotBlock').hidden = false;
+    $('slotDate').textContent = info.dateLabel;
+    $('slotArea').innerHTML = info.slots.map(s =>
+      `<label class="slot"><input type="radio" name="slot" value="${s.key}"><span>${s.start} – ${s.end}</span></label>`).join('');
+  }
+  $('reload').onclick = () => loadSlots(true);
+  loadSlots(false);
+
+  // ---- ส่ง ----
+  $('submit').onclick = async () => {
+    const members = [...document.querySelectorAll('.member')].map(r => ({
+      id: r.querySelector('.m-id').value.trim(), name: r.querySelector('.m-name').value.trim(),
+    })).filter(m => m.id || m.name);
+    const slot = document.querySelector('input[name=slot]:checked');
+    const form = {
+      topic: $('topic').value.trim(),
+      description: $('desc').value.trim(),
+      members,
+      email: '',
+      slotKey: slot ? slot.value : '',
+      visit: visitMode,
+    };
+
+    const errs = [];
+    if (visitMode === 'first' && duplicateOf(form.topic)) errs.push('มีกลุ่มที่ทำหัวข้อโครงงานนี้ไปแล้ว กรุณาใช้ชื่อหัวข้ออื่น หรือเลือก "อัพเดทความคืบหน้าโครงงาน" ถ้าเป็นกลุ่มเดียวกัน');
+    if (visitMode === 'next' && !selectedTopic) errs.push('กรุณาเลือกหัวข้อที่เคยเข้าพบจากรายการ (ถ้าไม่มี ให้เลือก "เข้าพบครั้งแรก เสนอหัวข้อโครงงาน")');
+    if (!form.description) errs.push(visitMode === 'next' ? 'กรุณาระบุสิ่งที่ต้องการปรึกษาในรอบนี้' : 'กรุณาอธิบายลักษณะ/ขอบเขตโครงงาน');
+    if (!members.length) errs.push('กรุณาระบุสมาชิกอย่างน้อย 1 คน');
+    members.forEach((m, i) => { if (!m.id || !m.name) errs.push(`สมาชิกคนที่ ${i + 1}: กรอกทั้งรหัสและชื่อ-สกุล`); });
+    if (!selectedDate) errs.push('กรุณาเลือกวันที่บนปฏิทิน');
+    else if (!form.slotKey) errs.push('กรุณาเลือกช่วงเวลาเข้าพบ');
+    if (errs.length) return showError(errs.join('\n'));
+
+    $('error').hidden = true;
+    $('submit').disabled = true; $('submit').innerHTML = '<span class="px">SAVING…</span>กำลังบันทึก';
+    try {
+      const res = await apiPost(form);
+      if (!res.ok) { showError(res.error); if (res.reload) loadSlots(true); apiGet('topics').then(r => { if (r.ok) topics = r.topics; checkDuplicate(); }).catch(() => {}); return; }
+      $('okWhen').textContent = res.when;
+      $('okTopic').textContent = res.topic + (res.round > 1 ? ` · รอบที่ ${res.round}` : '');
+      $('okId').textContent = res.bookingId;
+      $('okLine').hidden = visitMode === 'next';
+      $('okLineMsg').textContent = visitMode === 'next' ? 'บันทึกลงปฏิทินอาจารย์แล้ว แล้วพบกันตามนัด' : 'บันทึกลงปฏิทินอาจารย์แล้ว อย่าลืมเข้ากลุ่ม LINE เพื่อรับการติดต่อกลับ';
+      $('formView').hidden = true; $('successView').hidden = false;
+      window.scrollTo(0, 0);
+    } catch (e) {
+      showError('เกิดข้อผิดพลาด: ' + e.message);
+    } finally {
+      $('submit').disabled = false; $('submit').innerHTML = '<span class="px">START ▶</span>ยืนยันการจอง';
+    }
   };
-  $('saveNotice').onclick = async () => { const r = await api('setNotice', { notice: $('notice').value.trim() }); if (!r.ok) return flash(r.error, true); apply(r); flash('บันทึกข้อความแล้ว'); };
-  $('saveEnd').onclick = async () => { const d = $('endDate').value; if (!d) return; const r = await api('setEnd', { date: d }); if (!r.ok) return flash(r.error, true); apply(r); flash(`เปิดจองถึง ${thaiDate(d)}`); };
-  $('extendMonth').onclick = async () => {
-    const [y, m] = state.openUntil.split('-').map(Number);
-    const next = new Date(y, m, 0);                       // สิ้นเดือนถัดไป
-    const d = keyOf(next);
-    const r = await api('setEnd', { date: d }); if (!r.ok) return flash(r.error, true); apply(r); flash(`เปิดจองถึง ${thaiDate(d)}`);
+  function showError(msg) { $('error').textContent = msg; $('error').hidden = false; $('error').scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+</script>
+<script>
+/* ===== ฉากหลังเลื่อน + สุ่มวัตถุบนฟ้า (พิกเซลอาร์ตต้นฉบับ) ===== */
+(function () {
+  const cv = document.getElementById('sky'), ctx0 = cv.getContext('2d');
+  const fg = document.getElementById('fg'), ctxF = fg.getContext('2d');
+  let ctx = ctx0;  // เลเยอร์ที่กำลังวาด
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const PAL = { _: null, k: '#1a1a2e', w: '#ffffff', y: '#fcd000', o: '#c88000', r: '#e52521', g: '#00a800', G: '#007000', b: '#5c94fc', p: '#ff7bb0', c: '#8fd8ff', s: '#e8e0cc', d: '#8a3a0a', t: '#ffd9b3', B: '#0d6e6e', h: '#5b3418', n: '#4aa3ff' };
+
+  // สไปรต์: แถวละสตริง ตัวอักษร = สี, _ = โปร่ง
+  const SPR = {
+    cloud: [
+      '____kkkk________','___kwwwwk_______','__kwwwwwwkkkk___','_kwwwwwwwwwwwk__','kwwwwwwwwwwwwwk_','kwwwwwwwwwwwwwwk','_kkkkkkkkkkkkkk_'],
+    bird1: ['k_____k','_k___k_','__kkk__'],
+    bird2: ['__kkk__','_k___k_','k_____k'],
+    coin1: ['_kkkk_','kyyyyk','kyokyk','kyokyk','kyyyyk','_kkkk_'],
+    coin2: ['__kk__','_kyyk_','_kyok_','_kyok_','_kyyk_','__kk__'],
+    balloon: ['__kkkk__','_krrrrk_','krrpprrk','krrpprrk','krrrrrrk','_krrrrk_','__kkkk__','___kk___','__k__k__','_kddddk_','_kddddk_','__kkkk__'],
+    ufo: ['_____kkkkkk_____','____kccccccck___','___kccwwwwccck__','_kkkkkkkkkkkkkkk','kssssssssssssssk','kskyskyskyskysk_','_kkkkkkkkkkkkkk_'],
+    kite: ['___k___','__kyk__','_kyyyk_','kyyyyyk','_kyyyk_','__kyk__','___k___','___k___','__k____','___k___'],
+    plane: ['_____kk________','_____kwk_______','kkkkkkwwkkkkkkk','kwwwwwwwwwwwwwk','kkkkkkkwwkkkkkk','_____kwwk______','______kk_______'],
+    star: ['__k__','_kyk_','kyyyk','_kyk_','__k__'],
+    ballooncat: ['_k__k_','ktkkkt','ktttttk','ktkttkt','_ktttk_','__kkk__'],
+    // ตัวละครวิ่ง (ต้นฉบับ): นักศึกษาหมวกแก๊ป ถือแฟ้มเหลือง  3 เฟรม
+    run1: ['_____kkkkkk_____','____kBBBBBBk____','___kBBBBBBBBkkk_','___kttttttk_____','___ktkttktk_____','___kttttttk_____','____kkkkkk______','___kbbbbbbk_____','__ktkbbbbktk____','__ktkbbbbkyyyk__','___kbbbbbbkyyyk_','____kkkkkk_kkk__','___kkk__kkk_____','__kddk__kddk____','_kddk____kddk___','_kkk______kkk___'],
+    run2: ['_____kkkkkk_____','____kBBBBBBk____','___kBBBBBBBBkkk_','___kttttttk_____','___ktkttktk_____','___kttttttk_____','____kkkkkk______','___kbbbbbbk_____','___kbbbbbbk_____','__ktkbbbbkyyyk__','__ktkbbbbkyyyk__','____kkkkkk_kkk__','_____kkkk_______','____kddddk______','____kddddk______','____kkkkkk______'],
+    run3: ['_____kkkkkk_____','____kBBBBBBk____','___kBBBBBBBBkkk_','___kttttttk_____','___ktkttktk_____','___kttttttk_____','____kkkkkk______','___kbbbbbbk_____','__ktkbbbbktk____','__ktkbbbbkyyyk__','___kbbbbbbkyyyk_','____kkkkkk_kkk__','_____kkk_kkk____','____kddk__kddk__','___kddk____kddk_','___kkk______kkk_'],
+    jump: ['_____kkkkkk_____','____kBBBBBBk____','___kBBBBBBBBkkk_','___kttttttk_____','___ktkttktk_____','___kttttttk_____','____kkkkkk______','_ktkbbbbbbk_____','_ktkbbbbbbkyyyk_','__kkbbbbbbkyyyk_','___kbbbbbbk_kkk_','____kkkkkk______','___kkk__kkk_____','__kddk__kddk____','__kkk____kkk____','________________'],
+    // ตัวละครผู้หญิง (ต้นฉบับ): ผมยาว โบว์เหลือง เสื้อชมพู กระโปรงเขียวน้ำทะเล ถือสมุด
+    frun1: ['______hhhhh_____','_____hhhhhhh____','____hhhhhhhhhy__','____hhtttttthyy_','____hhtkttkth___','____hhtttttth___','____hhkttttkh___','____hh_kkkk_h___','___thhkppppkhht_','___tkkkppppkkkt_','____kkkppppkk_nn','_____kBBBBBBk_nn','____kBBBBBBBBk__','____kBBBBBBBBk__','_____ktk__ktk___','____kddk___kddk_'],
+    frun2: ['______hhhhh_____','_____hhhhhhh____','____hhhhhhhhhy__','____hhtttttthyy_','____hhtkttkth___','____hhtttttth___','____hhkttttkh___','____hh_kkkk_h___','___thhkppppkhht_','___tkkkppppkkkt_','____kkkppppkk_nn','_____kBBBBBBk_nn','____kBBBBBBBBk__','____kBBBBBBBBk__','______kttk______','_____kddddk_____'],
+    frun3: ['______hhhhh_____','_____hhhhhhh____','____hhhhhhhhhy__','____hhtttttthyy_','____hhtkttkth___','____hhtttttth___','____hhkttttkh___','____hh_kkkk_h___','___thhkppppkhht_','___tkkkppppkkkt_','____kkkppppkk_nn','_____kBBBBBBk_nn','____kBBBBBBBBk__','____kBBBBBBBBk__','____ktk__ktk____','___kddk___kddk__'],
+    fjump: ['______hhhhh_____','_____hhhhhhh____','____hhhhhhhhhy__','____hhtttttthyy_','____hhtkttkth___','____hhtttttth___','____hhkttttkh___','____hh_kkkk_h___','___thhkppppkhht_','___tkkkppppkkkt_','____kkkppppkk_nn','_____kBBBBBBk_nn','____kBBBBBBBBk__','____kBBBBBBBBk__','_____kttkkttk___','____kddk__kddk__'],
+    bush: ['____kkkk____','__kkggggkk__','_kggggggggk_','kggGgggGgggk','kGggggGgggGk','_kkkkkkkkkk_'],
+    rock: ['__kkkk__','_kssssk_','kssswssk','kssssssk','_kkkkkk_'],
+    flag: ['kkk____','krrk___','krrrk__','krrrrk_','krrrk__','krrk___','kkk____','kd_____','kd_____','kd_____','kd_____','kd_____'],
   };
-  function esc(x) { return String(x).replace(/[&<>"]/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c])); }
+  const SPR_W = {}; Object.keys(SPR).forEach(k => SPR_W[k] = SPR[k][0].length);
+
+  function draw(name, x, y, scale, flip) {
+    const rows = SPR[name], w = rows[0].length;
+    for (let r = 0; r < rows.length; r++) for (let c = 0; c < rows[r].length; c++) {
+      const col = PAL[rows[r][c]]; if (!col) continue;
+      const cc = flip ? (w - 1 - c) : c;
+      ctx.fillStyle = col; ctx.fillRect(Math.round(x + cc * scale), Math.round(y + r * scale), scale, scale);
+    }
+  }
+
+  let W, H, DPR = 1; const FG_H = 260;
+  function resize() {
+    DPR = Math.min(devicePixelRatio || 1, 2);
+    W = innerWidth; H = innerHeight;
+    cv.width = W * DPR; cv.height = H * DPR; ctx0.setTransform(DPR, 0, 0, DPR, 0, 0);
+    fg.width = W * DPR; fg.height = FG_H * DPR; ctxF.setTransform(DPR, 0, 0, DPR, 0, 0);
+  }
+  addEventListener('resize', resize); resize();
+
+  // ---- เนินเขา 2 ชั้น (parallax) ----
+  function hills(offset, base, amp, period, color, dark) {
+    ctx.fillStyle = color; ctx.beginPath(); ctx.moveTo(0, H);
+    for (let x = 0; x <= W + 20; x += 8) {
+      const t = (x + offset) / period;
+      const y = base - amp * (0.6 + 0.4 * Math.sin(t)) * Math.abs(Math.sin(t * 0.5));
+      ctx.lineTo(x, Math.round(y / 4) * 4);
+    }
+    ctx.lineTo(W, H); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = dark; ctx.beginPath(); ctx.moveTo(0, H);
+    for (let x = 0; x <= W + 20; x += 8) {
+      const t = (x + offset) / period;
+      const y = base - amp * (0.6 + 0.4 * Math.sin(t)) * Math.abs(Math.sin(t * 0.5)) + 14;
+      ctx.lineTo(x, Math.round(y / 4) * 4);
+    }
+    ctx.lineTo(W, H); ctx.closePath(); ctx.fill();
+  }
+
+  // ---- วัตถุ ----
+  const objs = [];
+  const TYPES = [
+    { name: 'cloud',   w: 1.0, speed: [10, 25],  scale: [3, 6], y: [0.05, 0.55], anim: null },
+    { name: 'bird1',   w: 1.2, speed: [40, 80],  scale: [3, 4], y: [0.08, 0.5],  anim: 'bird2', rate: 6, wobble: 10 },
+    { name: 'coin1',   w: 0.8, speed: [20, 40],  scale: [3, 4], y: [0.1, 0.6],   anim: 'coin2', rate: 4, wobble: 6 },
+    { name: 'balloon', w: 0.7, speed: [8, 18],   scale: [3, 5], y: [0.05, 0.5],  anim: null, wobble: 4 },
+    { name: 'ufo',     w: 0.4, speed: [60, 120], scale: [3, 4], y: [0.03, 0.3],  anim: null, wobble: 8 },
+    { name: 'kite',    w: 0.6, speed: [15, 30],  scale: [3, 4], y: [0.1, 0.5],   anim: null, wobble: 12 },
+    { name: 'plane',   w: 0.5, speed: [90, 150], scale: [3, 4], y: [0.03, 0.25], anim: null },
+    { name: 'star',    w: 0.6, speed: [30, 60],  scale: [2, 3], y: [0.02, 0.4],  anim: null, wobble: 5 },
+    { name: 'ballooncat', w: 0.3, speed: [12, 22], scale: [4, 5], y: [0.1, 0.45], anim: null, wobble: 6 },
+  ];
+  const rnd = (a, b) => a + Math.random() * (b - a);
+  function pick() { const tot = TYPES.reduce((s, t) => s + t.w, 0); let r = Math.random() * tot; for (const t of TYPES) { r -= t.w; if (r <= 0) return t; } return TYPES[0]; }
+  function spawn(fromEdge) {
+    const t = pick(), scale = Math.round(rnd(t.scale[0], t.scale[1]));
+    const w = SPR_W[t.name] * scale;
+    objs.push({
+      t, scale, w,
+      x: fromEdge ? -w - rnd(0, 200) : rnd(-w, W),   // เลื่อนจากซ้ายไปขวา
+      y: rnd(t.y[0], t.y[1]) * H, y0: 0,
+      speed: rnd(t.speed[0], t.speed[1]), phase: rnd(0, Math.PI * 2),
+      dir: 1,
+    });
+    objs[objs.length - 1].y0 = objs[objs.length - 1].y;
+  }
+  for (let i = 0; i < 10; i++) spawn(false);
+
+  // ---- ของบนพื้น (เลื่อนไปทางซ้าย = ตัวละครวิ่งไปทางขวา) ----
+  const props = []; let nextProp = 0;
+  const PROPS = ['bush', 'bush', 'rock', 'flag'];
+  function spawnProp() {
+    const name = PROPS[Math.floor(Math.random() * PROPS.length)], scale = 4;
+    props.push({ name, scale, x: W + 20, w: SPR_W[name] * scale, h: SPR[name].length * scale });
+  }
+  const GROUND_SPEED = 140;   // px/วินาที
+
+  // ---- ตัวละคร 2 ตัว หันหน้าเข้าหากัน: ชายซ้าย (หันขวา) / หญิงขวา (หันซ้าย) ----
+  const heroes = [
+    { vy: 0, y: 0, onGround: true, scale: 4, flip: false, run: ['run1', 'run2', 'run3', 'run2'], jump: 'jump', phase: 0,
+      x: () => { const m = (W - 800) / 2; return m >= 90 ? Math.max(8, m / 2 - 32) : 12; } },
+    { vy: 0, y: 0, onGround: true, scale: 4, flip: true, run: ['frun1', 'frun2', 'frun3', 'frun2'], jump: 'fjump', phase: 55,
+      x: () => { const m = (W - 800) / 2; return m >= 90 ? Math.min(W - 72, W - m / 2 - 32) : W - 76; } },
+  ];
+
+  let last = performance.now(), off = 0, nextSpawn = 0;
+  function frame(now) {
+    const dt = reduce ? 0 : Math.min(0.05, (now - last) / 1000); last = now;
+    off += dt * 12;
+
+    ctx.clearRect(0, 0, W, H);
+    // เนินเขาไกล/ใกล้
+    hills(off * 0.5, H - 60, 110, 90, '#3dbd3d', '#2e9c2e');
+    hills(off * 1.2, H - 56, 80, 60, PAL.g, PAL.G);
+
+    // วัตถุ
+    for (let i = objs.length - 1; i >= 0; i--) {
+      const o = objs[i], t = o.t;
+      o.x += o.speed * dt;
+      if (t.wobble) o.y = o.y0 + Math.sin(now / 600 + o.phase) * t.wobble;
+      let name = t.name;
+      if (t.anim && Math.floor(now / 1000 * t.rate + o.phase) % 2) name = t.anim;
+      ctx.globalAlpha = t.name === 'cloud' ? 0.95 : 1;
+      draw(name, o.x, o.y, o.scale);
+      ctx.globalAlpha = 1;
+      if (o.x > W + 40) objs.splice(i, 1);
+    }
+    // ---- ของบนพื้น (เลเยอร์หลัง เห็นเฉพาะช่องว่างข้างฟอร์ม) ----
+    for (let i = props.length - 1; i >= 0; i--) {
+      const pr = props[i]; pr.x -= GROUND_SPEED * dt;
+      draw(pr.name, pr.x, H - 56 - pr.h + 4, pr.scale);
+      if (pr.x + pr.w < -20) props.splice(i, 1);
+    }
+    if (!reduce && now > nextProp) { spawnProp(); nextProp = now + rnd(2500, 5500); }
+
+    // ---- ตัวละคร: จอกว้างวาดเลเยอร์หน้าในช่องว่างข้างฟอร์ม, จอแคบวาดเลเยอร์หลัง ----
+    ctxF.clearRect(0, 0, W, FG_H);
+    const wide = (W - 800) / 2 >= 90;
+    ctx = wide ? ctxF : ctx0;
+    const gy = wide ? FG_H - 56 : H - 56;
+    const G = 1300;                       // แรงโน้มถ่วง px/s² (ต่ำ = ลอยนานขึ้น)
+    for (const hero of heroes) {
+      const hs = hero.scale, hw = 16 * hs, hh = 16 * hs, hx = hero.x();
+      const heroCx = hx + hw / 2;
+      // จับเวลากระโดดให้จุดสูงสุดตรงกับตอนสิ่งกีดขวางผ่านใต้ตัว
+      if (hero.onGround && !reduce) {
+        for (const pr of props) {
+          if (pr.name === 'flag') continue;
+          const dx = (pr.x + pr.w / 2) - heroCx;            // ระยะจากกึ่งกลางตัวถึงกึ่งกลางสิ่งกีดขวาง (มาจากขวา)
+          if (dx <= 0) continue;
+          const clear = Math.max(pr.h + 44, 72);            // เท้าต้องลอยพ้นยอดสิ่งกีดขวางชัด ๆ (ต่ำสุด 72px)
+          const v = Math.sqrt(2 * G * clear);               // ความเร็วต้นที่ให้ความสูงพอดี
+          const half = v / G;                               // เวลาถึงจุดสูงสุด
+          if (dx <= GROUND_SPEED * half + pr.w / 4) {       // กระโดดตอนที่อีก 'half' วินาทีจะชนกัน
+            hero.vy = -v; hero.onGround = false; hero.jumpV = v; break;
+          }
+        }
+      }
+      if (!hero.onGround) {
+        hero.vy += G * dt; hero.y += hero.vy * dt;
+        if (hero.y >= 0) { hero.y = 0; hero.vy = 0; hero.onGround = true; hero.landAt = now; }
+      }
+      // ท่า: ขึ้น = jump, ลง = run2 (เหยียดขา), ลงพื้น 120ms แรก = ย่อตัว
+      let hname;
+      if (!hero.onGround) hname = hero.vy < 0 ? hero.jump : hero.run[1];
+      else if (now - (hero.landAt || 0) < 120) hname = hero.run[1];
+      else hname = hero.run[Math.floor((now + hero.phase) / 110) % 4];
+      if (reduce) hname = hero.run[0];
+      // ย่อตัวเล็กน้อยตอนลงพื้น (squash)
+      const squash = (hero.onGround && now - (hero.landAt || 0) < 120) ? 0.9 : 1;
+      const drawY = gy - hh * squash + hero.y + 4;
+      if (squash !== 1) { ctx.save(); ctx.translate(0, drawY); ctx.scale(1, squash); draw(hname, hx, 0, hs, hero.flip); ctx.restore(); }
+      else draw(hname, hx, drawY, hs, hero.flip);
+      // ฝุ่นตอนลงพื้น
+      if (hero.onGround && now - (hero.landAt || 0) < 200) {
+        const a = 1 - (now - hero.landAt) / 200; ctx.globalAlpha = a; ctx.fillStyle = '#f3ead3';
+        const fy = gy + 2;
+        ctx.fillRect(hx - 6 - (1 - a) * 10, fy - 4, 6, 4); ctx.fillRect(hx + hw + (1 - a) * 10, fy - 4, 6, 4);
+        ctx.fillRect(hx - 2 - (1 - a) * 6, fy - 8, 4, 4); ctx.fillRect(hx + hw - 2 + (1 - a) * 6, fy - 8, 4, 4);
+        ctx.globalAlpha = 1;
+      }
+    }
+    ctx = ctx0;
+
+    // สุ่มเกิดวัตถุใหม่
+    if (!reduce && now > nextSpawn) {
+      if (objs.length < 14) spawn(true);
+      nextSpawn = now + rnd(700, 2000);
+    }
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+})();
 </script>
 </body>
 </html>
