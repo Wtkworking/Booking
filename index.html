@@ -220,6 +220,7 @@
     </div>
   </header>
 
+  <div id="closedBanner" class="alert error" style="font-size:17px;text-align:center" hidden></div>
   <div id="formView">
     <section class="panel">
       <h2>WORLD 1 · ข้อมูลโครงงาน</h2>
@@ -314,7 +315,7 @@
 
 <script>
   // ===== URL ของ Apps Script Web App (ลงท้ายด้วย /exec) =====
-  const API_URL = 'https://script.google.com/macros/s/AKfycbw2eb5jbprYxguLcRn4fAt7qwucdYYDVAgU0tpLpQipJsKHgHGLJLjnwO45vfM-KBdt/exec';
+  const API_URL = 'https://script.google.com/macros/s/AKfycbw_HdEGAxKpjA0u7djtkXfpct5Ji_Sp2WRS0Nn6tDe_RHrwspzw71vE1HobxhvXi3nt/exec';
   // ===========================================================
 
   let cfg = { maxMembers: 5, slotMinutes: 30, weeksAhead: 4 };
@@ -340,7 +341,14 @@
   }
 
   apiGet('config').then(r => {
-    if (r.ok) { cfg = r.config; $('memberHint').textContent = `ไม่เกิน ${cfg.maxMembers} คน`; if (cfg.openUntil) $('openUntil').textContent = `เปิดจองถึง ${cfg.openUntil}`; }
+    if (r.ok) {
+      cfg = r.config; $('memberHint').textContent = `ไม่เกิน ${cfg.maxMembers} คน`;
+      if (cfg.openUntil) $('openUntil').textContent = `เปิดจองถึง ${cfg.openUntil}`;
+      if (cfg.enabled === false) {
+        $('closedBanner').textContent = '⏸ ' + (cfg.notice || 'ขณะนี้ปิดรับการจองชั่วคราว');
+        $('closedBanner').hidden = false; $('submit').disabled = true;
+      }
+    }
   }).catch(() => {});
 
   // ---- หัวข้อที่เคยเข้าพบ (autocomplete) ----
@@ -448,7 +456,7 @@
     try {
       const r = await apiGet('slots');
       if (!r.ok) throw new Error(r.error);
-      if (!r.days.length) { $('cal').innerHTML = '<div class="muted" style="grid-column:1/-1;text-align:center;padding:20px">ยังไม่มีช่วงเวลาว่างในช่วงที่เปิดจอง</div>'; return; }
+      if (!r.days.length) { $('cal').innerHTML = `<div class="muted" style="grid-column:1/-1;text-align:center;padding:20px">${cfg.enabled === false ? 'ปิดรับการจองชั่วคราว' : 'ยังไม่มีช่วงเวลาว่างในช่วงที่เปิดจอง'}</div>`; return; }
       slotMap = {};
       r.days.forEach(d => { slotMap[d.dateKey] = d; });
       if (!keepSelection || !slotMap[selectedDate]) {
