@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>AjGolf Connect · หน้าอาจารย์</title>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Mitr:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root { --ink:#1a1a2e; --panel:#fff8e6; --red:#e52521; --red-dark:#9c1410; --grass:#00a800; --grass-dark:#007000; --coin:#fcd000; --coin-dark:#c88000; --brick:#e5a04a; --brick-dark:#8a3a0a; --sky:#2b3a67; --px:4px;
+      --pixel-font:'Press Start 2P',monospace; --thai-font:'Mitr','Sarabun',system-ui,sans-serif; }
+    * { box-sizing: border-box; } [hidden] { display: none !important; }
+    body { margin:0; background: var(--sky); color: var(--ink); font-family: var(--thai-font); font-size:16px; line-height:1.55; }
+    .wrap { max-width: 860px; margin: 0 auto; padding: 28px 16px 60px; }
+    header { text-align:center; color:#fff; margin-bottom: 20px; }
+    header h1 { font-family: var(--pixel-font); font-size: 16px; margin:0 0 6px; text-shadow: 3px 3px 0 #000; }
+    header p { margin:0; opacity:.85; }
+    .panel { background: var(--panel); position: relative; margin-bottom: 22px; padding: 22px 20px 20px; border: var(--px) solid var(--ink); box-shadow: inset 0 0 0 var(--px) #fff, 8px 8px 0 #000; }
+    .panel h2 { position:absolute; top:-18px; left:16px; margin:0; background: var(--red); color:#fff; padding:6px 12px; font-size:15px; font-weight:600; border: var(--px) solid var(--ink); box-shadow: 4px 4px 0 var(--ink); }
+    .body { margin-top: 10px; }
+    label { display:block; font-size:14px; color:#5a4a3a; margin-bottom:4px; }
+    input, textarea { width:100%; font:inherit; padding:9px 11px; background:#fff; color:var(--ink); border: var(--px) solid var(--ink); box-shadow: inset 4px 4px 0 #e8e0cc; }
+    input:focus, textarea:focus { outline:none; box-shadow: inset 4px 4px 0 #e8e0cc, 0 0 0 var(--px) var(--coin); }
+    .pxbtn { font:inherit; font-weight:600; cursor:pointer; border: var(--px) solid var(--ink); padding: 9px 14px; background: var(--grass); color:#fff; box-shadow: 4px 4px 0 var(--ink); }
+    .pxbtn:active { translate: 4px 4px; box-shadow:none; } .pxbtn:disabled { opacity:.5; cursor:default; }
+    .pxbtn.ghost { background:#fff; color:var(--ink); } .pxbtn.danger { background: var(--red); }
+    .row { display:flex; gap:10px; flex-wrap:wrap; align-items:end; }
+    .row > * { flex:1 1 180px; } .row .pxbtn { flex: 0 0 auto; }
+    .status { display:flex; align-items:center; justify-content:space-between; gap:14px; padding:14px; border: var(--px) solid var(--ink); background:#fff; }
+    .status .dot { display:inline-block; width:14px; height:14px; margin-right:8px; vertical-align:-1px; }
+    .status.on .dot { background: var(--grass); } .status.off .dot { background: var(--red); }
+    .status strong { font-size:18px; }
+    .muted { color:#5a4a3a; font-size:14px; }
+    .alert { padding:12px 14px; margin: 0 0 14px; border: var(--px) solid var(--ink); white-space: pre-line; }
+    .alert.error { background:#ffd6d4; color: var(--red-dark); } .alert.ok { background:#dff5df; color: var(--grass-dark); }
+
+    .cal-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+    .cal-head .month { font-weight:600; font-size:18px; }
+    .cal-head button { font-family: var(--pixel-font); font-size:12px; padding:10px 14px; }
+    .cal { display:grid; grid-template-columns: repeat(7,1fr); gap:6px; }
+    .dow { text-align:center; font-family: var(--pixel-font); font-size:9px; padding:6px 0; color:#5a4a3a; }
+    .day { aspect-ratio:1; position:relative; display:flex; align-items:center; justify-content:center; font-family: var(--pixel-font); font-size:12px; background:#e8e0cc; color:#9a8f7a; border: var(--px) solid transparent; }
+    .day.blank { background: transparent; }
+    .day.open { background: var(--brick); color: var(--ink); border-color: var(--ink); cursor:pointer; box-shadow: inset -4px -4px 0 var(--brick-dark), 3px 3px 0 var(--ink); }
+    .day.open:hover { background: var(--coin); box-shadow: inset -4px -4px 0 var(--coin-dark), 3px 3px 0 var(--ink); }
+    .day.closed { background: var(--red); color:#fff; border-color: var(--ink); cursor:pointer; box-shadow: inset -4px -4px 0 var(--red-dark), 3px 3px 0 var(--ink); }
+    .day.closed::after { content:'✕'; position:absolute; top:3px; right:5px; font-size:9px; }
+    .day.past { opacity:.45; cursor:default; box-shadow:none; }
+    .day.today { outline: 3px dashed var(--ink); outline-offset: -3px; }
+    .day .n { position:absolute; bottom:3px; left:0; right:0; text-align:center; font-family: var(--thai-font); font-size:11px; font-weight:600; color: var(--ink); }
+    .day.closed .n { color:#fff; }
+    .legend { display:flex; gap:14px; flex-wrap:wrap; margin-top:12px; font-size:13px; color:#5a4a3a; }
+    .legend i { display:inline-block; width:14px; height:14px; vertical-align:-2px; margin-right:6px; border:2px solid var(--ink); }
+    .daylist { margin-top:16px; }
+    .daylist h3 { font-size:16px; margin:0 0 8px; }
+    .bk { padding:8px 10px; border-left: 6px solid var(--grass); background:#fff; margin-bottom:6px; font-size:14px; }
+    .bk b { font-family: var(--pixel-font); font-size:10px; margin-right:8px; }
+    @media (max-width:560px){ .day{font-size:10px;} .cal{gap:4px;} .panel{box-shadow: inset 0 0 0 var(--px) #fff, 5px 5px 0 #000;} }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>AjGolf Connect · TEACHER</h1>
+    <p>ปิด/เปิดวันเข้าพบ · หยุดรับจองชั่วคราว · กำหนดวันปิดรับ</p>
+  </header>
+
+  <!-- ล็อกอิน -->
+  <section class="panel" id="loginView">
+    <h2>LOGIN</h2>
+    <div class="body">
+      <div id="loginErr" class="alert error" hidden></div>
+      <div class="row">
+        <div><label for="pin">รหัสผ่านหน้าอาจารย์</label><input id="pin" type="password" inputmode="numeric" autocomplete="current-password" placeholder="ดูได้จาก Google Sheet → เมนู AjGolf Connect → ดูรหัสผ่าน"></div>
+        <button class="pxbtn" id="loginBtn">เข้าสู่ระบบ</button>
+      </div>
+      <p class="muted" style="margin:10px 0 0">รหัสผ่านอยู่ที่แท็บ <b>Settings</b> ของ Google Sheet เปลี่ยนได้ตลอด</p>
+    </div>
+  </section>
+
+  <div id="app" hidden>
+    <div id="msg" class="alert ok" hidden></div>
+
+    <section class="panel">
+      <h2>สถานะการรับจอง</h2>
+      <div class="body">
+        <div class="status" id="statusBox">
+          <div><span class="dot"></span><strong id="statusText">…</strong><div class="muted" id="statusSub"></div></div>
+          <button class="pxbtn" id="toggleEnabled">…</button>
+        </div>
+        <div style="margin-top:14px">
+          <label for="notice">ข้อความที่นักศึกษาจะเห็นตอนปิดรับ</label>
+          <div class="row"><input id="notice"><button class="pxbtn ghost" id="saveNotice">บันทึกข้อความ</button></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>เปิดจองถึงวันที่</h2>
+      <div class="body">
+        <div class="row">
+          <div><label for="endDate">นักศึกษาจองได้ถึงวันที่</label><input id="endDate" type="date"></div>
+          <button class="pxbtn ghost" id="saveEnd">บันทึก</button>
+          <button class="pxbtn" id="extendMonth">+1 เดือน</button>
+        </div>
+        <p class="muted" style="margin:10px 0 0">กฎจองล่วงหน้า: นักศึกษาต้องจองล่วงหน้าอย่างน้อย <b id="leadDays">2</b> วัน (วันนี้ <span id="todayLabel"></span>)</p>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>ปิด/เปิดวันเข้าพบ</h2>
+      <div class="body">
+        <p class="muted" style="margin:0 0 10px">คลิกวันเพื่อสลับ <b>เปิด ↔ ปิดรับ</b> · ตัวเลขใต้วันคือจำนวนกลุ่มที่จองแล้ว (ปิดวันที่มีคนจองไว้ ระบบจะเตือน การจองเดิมยังอยู่ ต้องแจ้งนักศึกษาเอง)</p>
+        <div class="cal-head">
+          <button type="button" class="pxbtn ghost" id="prevMonth">&lt;</button>
+          <div class="month" id="monthLabel"></div>
+          <button type="button" class="pxbtn ghost" id="nextMonth">&gt;</button>
+        </div>
+        <div class="cal" id="cal"></div>
+        <div class="legend">
+          <span><i style="background:var(--brick)"></i>เปิดรับ</span>
+          <span><i style="background:var(--red)"></i>ปิดรับ</span>
+          <span><i style="background:#e8e0cc;border-color:#d0c6ae"></i>ไม่ใช่วันเข้าพบ</span>
+        </div>
+        <div class="daylist" id="daylist"></div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<script>
+  // ===== URL ของ Apps Script Web App (ตัวเดียวกับ index.html) =====
+  const API_URL = 'https://script.google.com/macros/s/AKfycbw2eb5jbprYxguLcRn4fAt7qwucdYYDVAgU0tpLpQipJsKHgHGLJLjnwO45vfM-KBdt/exec';
+  // =================================================================
+  const $ = id => document.getElementById(id);
+  const TH_MONTHS = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+  const TH_DAYS = ['อาทิตย์','จันทร์','อังคาร','พุธ','พฤหัสบดี','ศุกร์','เสาร์'];
+  const DOW = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
+  let pin = sessionStorage.getItem('ajgolf_pin') || '';
+  let state = null, viewYear, viewMonth, selectedDay = null;
+
+  async function api(op, extra) {
+    const res = await fetch(API_URL, { method: 'POST', redirect: 'follow', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(Object.assign({ action: 'admin', pin, op }, extra || {})) });
+    return res.json();
+  }
+  function flash(text, isErr) { const m = $('msg'); m.textContent = text; m.className = 'alert ' + (isErr ? 'error' : 'ok'); m.hidden = false; clearTimeout(flash.t); flash.t = setTimeout(() => m.hidden = true, 3500); }
+  const keyOf = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  const thaiDate = k => { const [y,m,d] = k.split('-').map(Number); const dt = new Date(y, m-1, d); return `${TH_DAYS[dt.getDay()]} ${d} ${TH_MONTHS[m-1].slice(0,3)}. ${y+543}`; };
+
+  // ---- login ----
+  async function login() {
+    $('loginBtn').disabled = true;
+    try {
+      const r = await api('state');
+      if (!r.ok) { $('loginErr').textContent = r.error || 'เข้าสู่ระบบไม่สำเร็จ'; $('loginErr').hidden = false; return; }
+      sessionStorage.setItem('ajgolf_pin', pin);
+      $('loginView').hidden = true; $('app').hidden = false;
+      apply(r);
+    } catch (e) { $('loginErr').textContent = 'ติดต่อเซิร์ฟเวอร์ไม่ได้: ' + e.message; $('loginErr').hidden = false; }
+    finally { $('loginBtn').disabled = false; }
+  }
+  $('loginBtn').onclick = () => { pin = $('pin').value.trim(); login(); };
+  $('pin').addEventListener('keydown', e => { if (e.key === 'Enter') $('loginBtn').click(); });
+  if (pin) login();
+
+  // ---- render ----
+  function apply(r) {
+    state = r;
+    const on = r.enabled;
+    $('statusBox').className = 'status ' + (on ? 'on' : 'off');
+    $('statusText').textContent = on ? 'เปิดรับการจอง' : 'ปิดรับการจองชั่วคราว';
+    $('statusSub').textContent = on ? 'นักศึกษาจองคิวได้ตามปกติ' : 'หน้านักศึกษาจะไม่แสดงช่องเวลาและกดจองไม่ได้';
+    $('toggleEnabled').textContent = on ? 'หยุดรับจองชั่วคราว' : 'เปิดรับจองอีกครั้ง';
+    $('toggleEnabled').className = 'pxbtn ' + (on ? 'danger' : '');
+    $('notice').value = r.notice || '';
+    $('endDate').value = r.openUntil;
+    $('leadDays').textContent = r.minLeadDays; $('todayLabel').textContent = thaiDate(r.today);
+    if (viewYear === undefined) { const [y, m] = r.today.split('-').map(Number); viewYear = y; viewMonth = m - 1; }
+    renderCal();
+  }
+  function renderCal() {
+    const cal = $('cal'); cal.innerHTML = '';
+    $('monthLabel').textContent = `${TH_MONTHS[viewMonth]} ${viewYear + 543}`;
+    DOW.forEach(d => { const el = document.createElement('div'); el.className = 'dow'; el.textContent = d; cal.appendChild(el); });
+    const first = new Date(viewYear, viewMonth, 1), dim = new Date(viewYear, viewMonth + 1, 0).getDate();
+    for (let i = 0; i < first.getDay(); i++) { const b = document.createElement('div'); b.className = 'day blank'; cal.appendChild(b); }
+    for (let d = 1; d <= dim; d++) {
+      const dt = new Date(viewYear, viewMonth, d), key = keyOf(dt);
+      const el = document.createElement('div'); el.className = 'day'; el.textContent = d;
+      const isOpenDow = state.openDays.includes(dt.getDay());
+      const n = (state.bookings[key] || []).length;
+      if (key === state.today) el.classList.add('today');
+      if (isOpenDow) {
+        const closed = key in state.holidays;
+        el.classList.add(closed ? 'closed' : 'open');
+        if (key < state.today) el.classList.add('past');
+        if (n) { const b = document.createElement('span'); b.className = 'n'; b.textContent = `${n} กลุ่ม`; el.appendChild(b); }
+        el.onclick = () => onDayClick(key, closed, n);
+      } else if (n) { const b = document.createElement('span'); b.className = 'n'; b.textContent = `${n}`; el.appendChild(b); }
+      cal.appendChild(el);
+    }
+    renderDayList();
+  }
+  function renderDayList() {
+    const box = $('daylist');
+    if (!selectedDay) { box.innerHTML = ''; return; }
+    const list = state.bookings[selectedDay] || [];
+    box.innerHTML = `<h3>${thaiDate(selectedDay)} ${selectedDay in state.holidays ? '· <span style="color:var(--red)">ปิดรับ</span>' : ''}</h3>` +
+      (list.length ? list.map(b => `<div class="bk"><b>${b.time}</b>${esc(b.topic)}<div class="muted">${esc(b.members).replace(/\n/g, ' · ')}</div></div>`).join('') : '<p class="muted">ยังไม่มีการจองในวันนี้</p>');
+  }
+  async function onDayClick(key, closed, n) {
+    selectedDay = key; renderDayList();
+    if (key < state.today) return;                       // วันที่ผ่านแล้ว ดูอย่างเดียว
+    if (!closed && n && !confirm(`วันนี้มี ${n} กลุ่มจองไว้แล้ว ต้องการปิดรับหรือไม่?\n(การจองเดิมยังอยู่ ต้องแจ้งนักศึกษาเอง)`)) return;
+    const r = await api('toggleDay', { date: key });
+    if (!r.ok) return flash(r.error, true);
+    apply(r); flash(`${thaiDate(key)} → ${key in r.holidays ? 'ปิดรับแล้ว' : 'เปิดรับแล้ว'}`);
+  }
+  $('prevMonth').onclick = () => { viewMonth--; if (viewMonth < 0) { viewMonth = 11; viewYear--; } renderCal(); };
+  $('nextMonth').onclick = () => { viewMonth++; if (viewMonth > 11) { viewMonth = 0; viewYear++; } renderCal(); };
+
+  // ---- actions ----
+  $('toggleEnabled').onclick = async () => {
+    const next = !state.enabled;
+    if (!next && !confirm('หยุดรับจองชั่วคราว? นักศึกษาจะจองไม่ได้จนกว่าจะเปิดอีกครั้ง')) return;
+    const r = await api('setEnabled', { enabled: next }); if (!r.ok) return flash(r.error, true);
+    apply(r); flash(next ? 'เปิดรับจองแล้ว' : 'หยุดรับจองชั่วคราวแล้ว');
+  };
+  $('saveNotice').onclick = async () => { const r = await api('setNotice', { notice: $('notice').value.trim() }); if (!r.ok) return flash(r.error, true); apply(r); flash('บันทึกข้อความแล้ว'); };
+  $('saveEnd').onclick = async () => { const d = $('endDate').value; if (!d) return; const r = await api('setEnd', { date: d }); if (!r.ok) return flash(r.error, true); apply(r); flash(`เปิดจองถึง ${thaiDate(d)}`); };
+  $('extendMonth').onclick = async () => {
+    const [y, m] = state.openUntil.split('-').map(Number);
+    const next = new Date(y, m, 0);                       // สิ้นเดือนถัดไป
+    const d = keyOf(next);
+    const r = await api('setEnd', { date: d }); if (!r.ok) return flash(r.error, true); apply(r); flash(`เปิดจองถึง ${thaiDate(d)}`);
+  };
+  function esc(x) { return String(x).replace(/[&<>"]/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c])); }
+</script>
+</body>
+</html>
