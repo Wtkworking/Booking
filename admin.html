@@ -51,6 +51,19 @@
     .day.closed .n { color:#fff; }
     .legend { display:flex; gap:14px; flex-wrap:wrap; margin-top:12px; font-size:13px; color:#5a4a3a; }
     .legend i { display:inline-block; width:14px; height:14px; vertical-align:-2px; margin-right:6px; border:2px solid var(--ink); }
+    .day.partial { background: repeating-linear-gradient(135deg, var(--brick) 0 8px, var(--red) 8px 12px); color: var(--ink); border-color: var(--ink); cursor:pointer; box-shadow: 3px 3px 0 var(--ink); }
+    .day.partial .n { color: var(--ink); background: rgba(255,255,255,.8); margin: 0 6px; }
+    .dayedit { margin-top:16px; padding:14px; background:#fff; border: var(--px) solid var(--ink); }
+    .dayedit h3 { font-size:17px; margin:0 0 4px; display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; }
+    .slotgrid { display:grid; grid-template-columns: repeat(4,1fr); gap:8px; margin-top:10px; }
+    .tslot { font: inherit; font-weight:600; font-size:15px; padding:9px 6px; cursor:pointer; border: var(--px) solid var(--ink); background:#fff; color: var(--ink); box-shadow: 3px 3px 0 var(--ink); position:relative; }
+    .tslot:active { translate:3px 3px; box-shadow:none; }
+    .tslot.closed { background: var(--red); color:#fff; text-decoration: line-through; }
+    .tslot.booked { background: var(--grass); color:#fff; cursor:default; }
+    .tslot.booked::after { content:'จองแล้ว'; display:block; font-size:11px; font-weight:400; }
+    .tslot.closed::after { content:'ปิด'; display:block; font-size:11px; font-weight:400; }
+    .tslot.past { opacity:.45; cursor:default; }
+    @media (max-width:560px){ .slotgrid{ grid-template-columns: repeat(2,1fr);} }
     .daylist { margin-top:16px; }
     .daylist h3 { font-size:16px; margin:0 0 8px; }
     .bk { padding:8px 10px; border-left: 6px solid var(--grass); background:#fff; margin-bottom:6px; font-size:14px; }
@@ -110,7 +123,7 @@
     <section class="panel">
       <h2>ปิด/เปิดวันเข้าพบ</h2>
       <div class="body">
-        <p class="muted" style="margin:0 0 10px">คลิกวันเพื่อสลับ <b>เปิด ↔ ปิดรับ</b> · ตัวเลขใต้วันคือจำนวนกลุ่มที่จองแล้ว (ปิดวันที่มีคนจองไว้ ระบบจะเตือน การจองเดิมยังอยู่ ต้องแจ้งนักศึกษาเอง)</p>
+        <p class="muted" style="margin:0 0 10px">คลิกวันเพื่อดูช่องเวลา แล้วกด<b>ปิดเฉพาะช่วง</b>หรือ<b>ปิดทั้งวัน</b> · ตัวเลขใต้วันคือจำนวนกลุ่มที่จองแล้ว (ปิดช่วงที่มีคนจองไว้ การจองเดิมยังอยู่ ต้องแจ้งนักศึกษาเอง)</p>
         <div class="cal-head">
           <button type="button" class="pxbtn ghost" id="prevMonth">&lt;</button>
           <div class="month" id="monthLabel"></div>
@@ -119,7 +132,8 @@
         <div class="cal" id="cal"></div>
         <div class="legend">
           <span><i style="background:var(--brick)"></i>เปิดรับ</span>
-          <span><i style="background:var(--red)"></i>ปิดรับ</span>
+          <span><i style="background:var(--red)"></i>ปิดทั้งวัน</span>
+          <span><i style="background:repeating-linear-gradient(135deg,var(--brick) 0 4px,var(--red) 4px 6px)"></i>ปิดบางช่วง</span>
           <span><i style="background:#e8e0cc;border-color:#d0c6ae"></i>ไม่ใช่วันเข้าพบ</span>
         </div>
         <div class="daylist" id="daylist"></div>
@@ -192,11 +206,12 @@
       const n = (state.bookings[key] || []).length;
       if (key === state.today) el.classList.add('today');
       if (isOpenDow) {
-        const closed = key in state.holidays;
-        el.classList.add(closed ? 'closed' : 'open');
+        const cl = state.closures[key];
+        const full = !!(cl && cl.full), partial = !!(cl && !cl.full && cl.ranges.length);
+        el.classList.add(full ? 'closed' : partial ? 'partial' : 'open');
         if (key < state.today) el.classList.add('past');
         if (n) { const b = document.createElement('span'); b.className = 'n'; b.textContent = `${n} กลุ่ม`; el.appendChild(b); }
-        el.onclick = () => onDayClick(key, closed, n);
+        el.onclick = () => { selectedDay = key; renderDayList(); };
       } else if (n) { const b = document.createElement('span'); b.className = 'n'; b.textContent = `${n}`; el.appendChild(b); }
       cal.appendChild(el);
     }
@@ -205,17 +220,37 @@
   function renderDayList() {
     const box = $('daylist');
     if (!selectedDay) { box.innerHTML = ''; return; }
-    const list = state.bookings[selectedDay] || [];
-    box.innerHTML = `<h3>${thaiDate(selectedDay)} ${selectedDay in state.holidays ? '· <span style="color:var(--red)">ปิดรับ</span>' : ''}</h3>` +
-      (list.length ? list.map(b => `<div class="bk"><b>${b.time}</b>${esc(b.topic)}<div class="muted">${esc(b.members).replace(/\n/g, ' · ')}</div></div>`).join('') : '<p class="muted">ยังไม่มีการจองในวันนี้</p>');
-  }
-  async function onDayClick(key, closed, n) {
-    selectedDay = key; renderDayList();
-    if (key < state.today) return;                       // วันที่ผ่านแล้ว ดูอย่างเดียว
-    if (!closed && n && !confirm(`วันนี้มี ${n} กลุ่มจองไว้แล้ว ต้องการปิดรับหรือไม่?\n(การจองเดิมยังอยู่ ต้องแจ้งนักศึกษาเอง)`)) return;
-    const r = await api('toggleDay', { date: key });
-    if (!r.ok) return flash(r.error, true);
-    apply(r); flash(`${thaiDate(key)} → ${key in r.holidays ? 'ปิดรับแล้ว' : 'เปิดรับแล้ว'}`);
+    const key = selectedDay, list = state.bookings[key] || [], cl = state.closures[key] || { full: false, ranges: [] };
+    const past = key < state.today;
+    const bookedTimes = new Set(list.map(b => b.time));
+    const slotsHtml = state.slotTimes.map(t => {
+      const closed = cl.full || cl.ranges.some(rg => rg.start < t.end && rg.end > t.start);
+      const booked = bookedTimes.has(t.start);
+      const cls = 'tslot' + (booked ? ' booked' : closed ? ' closed' : '') + (past ? ' past' : '');
+      return `<button type="button" class="${cls}" data-s="${t.start}" data-e="${t.end}" ${past || booked ? 'disabled' : ''}>${t.start}–${t.end}</button>`;
+    }).join('');
+    box.innerHTML = `
+      <div class="dayedit">
+        <h3><span>${thaiDate(key)} ${cl.full ? '· <span style="color:var(--red)">ปิดทั้งวัน</span>' : cl.ranges.length ? '· <span style="color:var(--red)">ปิดบางช่วง</span>' : ''}</span>
+          ${past ? '<span class="muted">วันที่ผ่านแล้ว</span>' : `<button type="button" class="pxbtn ${cl.full ? '' : 'danger'}" id="toggleWhole">${cl.full ? 'เปิดรับทั้งวัน' : 'ปิดทั้งวัน'}</button>`}
+        </h3>
+        <div class="muted">${cl.full ? 'กด "เปิดรับทั้งวัน" เพื่อยกเลิกการปิด' : 'กดช่องเวลาเพื่อสลับ เปิด ↔ ปิด เฉพาะช่วงนั้น'}</div>
+        <div class="slotgrid">${slotsHtml}</div>
+      </div>
+      <div class="daylist">
+        <h3>การจองในวันนี้ (${list.length})</h3>
+        ${list.length ? list.map(b => `<div class="bk"><b>${b.time}</b>${b.category ? `<span class="muted">[${esc(b.category)}]</span> ` : ''}${esc(b.topic)}<div class="muted">${esc(b.members).replace(/\n/g, ' · ')}</div></div>`).join('') : '<p class="muted">ยังไม่มีการจอง</p>'}
+      </div>`;
+    const tw = $('toggleWhole');
+    if (tw) tw.onclick = async () => {
+      if (!cl.full && list.length && !confirm(`วันนี้มี ${list.length} กลุ่มจองไว้แล้ว ต้องการปิดทั้งวันหรือไม่?\n(การจองเดิมยังอยู่ ต้องแจ้งนักศึกษาเอง)`)) return;
+      const r = await api('toggleDay', { date: key }); if (!r.ok) return flash(r.error, true);
+      apply(r); flash(`${thaiDate(key)} → ${r.closures[key] && r.closures[key].full ? 'ปิดทั้งวันแล้ว' : 'เปิดรับแล้ว'}`);
+    };
+    if (!cl.full) box.querySelectorAll('.tslot:not(.booked):not(.past)').forEach(btn => btn.onclick = async () => {
+      const r = await api('toggleSlot', { date: key, start: btn.dataset.s, end: btn.dataset.e }); if (!r.ok) return flash(r.error, true);
+      apply(r); flash(`${btn.dataset.s}–${btn.dataset.e} → ${btn.classList.contains('closed') ? 'เปิดแล้ว' : 'ปิดแล้ว'}`);
+    });
   }
   $('prevMonth').onclick = () => { viewMonth--; if (viewMonth < 0) { viewMonth = 11; viewYear--; } renderCal(); };
   $('nextMonth').onclick = () => { viewMonth++; if (viewMonth > 11) { viewMonth = 0; viewYear++; } renderCal(); };
