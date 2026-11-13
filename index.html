@@ -219,9 +219,11 @@
 
 <div class="wrap">
   <header>
-    <h1>AjGolf Connect<span class="th">ปรึกษาระบบงานกับศูนย์ AiBA หรือติดต่ออาจารย์เพื่อปรึกษาโครงงานและสอบ(เฉพาะนักศึกษา)</span></h1>
+    <h1>AjGolf Connect<span class="th">จองคิวเข้าพบศูนย์ AiBA และอาจารย์</span></h1>
     <div class="hud">
-      <span><i class="coin-icon"></i> 30 หรือ 60 MIN วันจันทร์ - วันศุกร์ ช่วงเวลา 09:00–12:00 และ 14:00–17:00</span>
+      <span><i class="coin-icon"></i> 30 MIN</span>
+      <span class="th">จันทร์ พฤหัส ศุกร์</span>
+      <span>09:00–12:00, 14:00–17:00</span>
       <span class="th" id="openUntil"></span>
     </div>
   </header>
@@ -234,17 +236,17 @@
         <div class="field">
           <label>ต้องการเข้าพบเรื่องใด *</label>
           <div class="seg" role="radiogroup">
-            <button type="button" class="seg-btn" data-main="aiba">1 · ปรึกษาระบบงานของศูนย์ AiBA</button>
-            <button type="button" class="seg-btn" data-main="teacher">2 · เข้าพบอาจารย์</button>
+            <button type="button" class="seg-btn" data-main="aiba">ปรึกษาระบบงานของศูนย์ AiBA</button>
+            <button type="button" class="seg-btn" data-main="teacher">เข้าพบอาจารย์</button>
           </div>
         </div>
         <div class="field" id="subField" hidden>
           <label>เข้าพบอาจารย์เรื่อง *</label>
           <div class="sub-list" role="radiogroup">
-            <button type="button" class="sub-btn" data-cat="project"><b>2.1</b> ปรึกษาโครงงาน</button>
-            <button type="button" class="sub-btn" data-cat="present"><b>2.2</b> นัดคิวนำเสนอโครงงานประจำรายวิชา</button>
-            <button type="button" class="sub-btn" data-cat="advise"><b>2.3</b> เข้าพบอาจารย์ที่ปรึกษา เพื่อปรึกษาปัญหาต่าง ๆ</button>
-            <button type="button" class="sub-btn" data-cat="other"><b>2.4</b> เรื่องอื่น ๆ</button>
+            <button type="button" class="sub-btn" data-cat="project">ปรึกษาโปรเจคจบ (Final Project / Thesis)</button>
+            <button type="button" class="sub-btn" data-cat="present">นัดคิวนำเสนอโปรเจคในรายวิชา</button>
+            <button type="button" class="sub-btn" data-cat="advise">เข้าพบอาจารย์ที่ปรึกษา เพื่อปรึกษาปัญหาต่าง ๆ</button>
+            <button type="button" class="sub-btn" data-cat="other">เรื่องอื่น ๆ</button>
           </div>
         </div>
       </div>
@@ -268,19 +270,19 @@
           <div class="field">
             <label>เป็นการเข้าพบครั้งที่เท่าไร *</label>
             <div class="seg" role="radiogroup">
-              <button type="button" class="seg-btn active" id="visitFirst" role="radio" aria-checked="true">1ST · เข้าพบครั้งแรก เสนอหัวข้อโครงงาน</button>
-              <button type="button" class="seg-btn" id="visitNext" role="radio" aria-checked="false">NEXT · อัพเดทความคืบหน้าโครงงาน</button>
+              <button type="button" class="seg-btn active" id="visitFirst" role="radio" aria-checked="true">เข้าพบครั้งแรก เสนอหัวข้อโปรเจค</button>
+              <button type="button" class="seg-btn" id="visitNext" role="radio" aria-checked="false">อัพเดทความคืบหน้าโปรเจค</button>
             </div>
           </div>
           <div class="field ac">
-            <label for="topic" id="topicLabel">หัวข้อโครงงาน <span class="muted">(ถ้ามี)</span></label>
+            <label for="topic" id="topicLabel">หัวข้อโปรเจค <span class="muted">(ถ้ามี)</span></label>
             <input id="topic" maxlength="200" placeholder="เช่น ระบบจัดการคลังสินค้าด้วย RFID" autocomplete="off">
             <div class="ac-list" id="topicList" hidden></div>
             <div class="round-badge" id="roundBadge" hidden></div>
             <div class="dup-warn" id="dupWarn" hidden></div>
           </div>
           <div class="field" id="projDescField">
-            <label for="desc" id="descLabel">ลักษณะของโครงงาน ขอบเขต หรือสิ่งที่ต้องการทำ *</label>
+            <label for="desc" id="descLabel">ลักษณะของโปรเจค ขอบเขต หรือสิ่งที่ต้องการทำ *</label>
             <textarea id="desc" placeholder="อธิบายปัญหาที่ต้องการแก้ กลุ่มผู้ใช้ เทคโนโลยีที่คิดจะใช้ และสิ่งที่อยากปรึกษา"></textarea>
           </div>
         </div>
@@ -289,9 +291,9 @@
         <div class="cat-form" data-for="present" hidden>
           <div class="field">
             <label for="course">รายวิชาที่นำเสนอ *</label>
-            <select id="course"><option value="">กำลังโหลดรายวิชา…</option></select>
+            <select id="course"><option value="" disabled selected hidden>กำลังโหลดรายวิชา…</option></select>
           </div>
-          <div class="field"><label for="presentTopic">หัวข้อโครงงานที่จะนำเสนอ *</label><input id="presentTopic" maxlength="200" placeholder="ชื่อโครงงาน"></div>
+          <div class="field"><label for="presentTopic">หัวข้อโปรเจคที่จะนำเสนอ *</label><input id="presentTopic" maxlength="200" placeholder="ชื่อโครงงาน"></div>
           <div class="field"><label for="presentNote">หมายเหตุ <span class="muted">(ถ้ามี)</span></label><input id="presentNote" placeholder="เช่น อุปกรณ์ที่ต้องใช้ / ขอ projector"></div>
         </div>
 
@@ -376,7 +378,7 @@
 
 <script>
   // ===== URL ของ Apps Script Web App (ลงท้ายด้วย /exec) =====
-  const API_URL = 'https://script.google.com/macros/s/AKfycbzAoSp66UWwlSnL9beYGbHX3WZpbtlGqlKPiDl40cpIcrt12dOeR2geEYg8CU8NNs9I/exec';
+  const API_URL = 'https://script.google.com/macros/s/AKfycbw_HdEGAxKpjA0u7djtkXfpct5Ji_Sp2WRS0Nn6tDe_RHrwspzw71vE1HobxhvXi3nt/exec';
   // ===========================================================
 
   let cfg = { maxMembers: 5, slotMinutes: 30, weeksAhead: 4 };
@@ -415,7 +417,7 @@
   // ---- ประเภทการเข้าพบ ----
   let category = null;              // 'aiba' | 'project' | 'present' | 'advise' | 'other'
   const NEED_MAJOR = { present: true, advise: true, other: true };
-  const DETAIL_TITLE = { aiba: 'WORLD 2 · ปรึกษาระบบงานศูนย์ AiBA', project: 'WORLD 2 · ข้อมูลโครงงาน', present: 'WORLD 2 · นัดคิวนำเสนอโครงงาน', advise: 'WORLD 2 · ปรึกษาอาจารย์ที่ปรึกษา', other: 'WORLD 2 · เรื่องอื่น ๆ' };
+  const DETAIL_TITLE = { aiba: 'ปรึกษาระบบงานศูนย์ AiBA', project: 'ข้อมูลโปรเจคจบ', present: 'นัดคิวนำเสนอโปรเจคในรายวิชา', advise: 'ปรึกษาอาจารย์ที่ปรึกษา', other: 'เรื่องอื่น ๆ' };
   const MEMBER_LABEL = { project: 'สมาชิกกลุ่ม *', present: 'สมาชิกกลุ่มที่นำเสนอ *', advise: 'ผู้เข้าพบ *', other: 'ผู้เข้าพบ *' };
   document.querySelectorAll('[data-main]').forEach(btn => btn.onclick = () => {
     document.querySelectorAll('[data-main]').forEach(b => b.classList.toggle('active', b === btn));
@@ -447,7 +449,7 @@
     try {
       const r = await apiGet('courses');
       courses = r.ok ? r.courses : [];
-      $('course').innerHTML = '<option value="">— เลือกรายวิชา —</option>' + courses.map((c, i) => `<option value="${i}">${esc(c.code)} ${esc(c.name)}</option>`).join('');
+      $('course').innerHTML = '<option value="" disabled selected hidden>— เลือกรายวิชา —</option>' + courses.map((c, i) => `<option value="${i}">${esc(c.code)} ${esc(c.name)}</option>`).join('');
       if (!courses.length) $('course').innerHTML = '<option value="">ยังไม่มีรายวิชาเปิดรับนำเสนอ กรุณาติดต่ออาจารย์</option>';
       coursesLoaded = true;
     } catch (e) { $('course').innerHTML = '<option value="">โหลดรายวิชาไม่สำเร็จ</option>'; }
@@ -459,7 +461,7 @@
 
   const topicInput = $('topic'), topicList = $('topicList');
   let visitMode = 'first';   // 'first' | 'next'
-  const DESC_FIRST = 'ลักษณะของโครงงาน ขอบเขต หรือสิ่งที่ต้องการทำ *';
+  const DESC_FIRST = 'ลักษณะของโปรเจค ขอบเขต หรือสิ่งที่ต้องการทำ *';
   const DESC_NEXT = 'สิ่งที่ต้องการปรึกษาในรอบนี้ / ความคืบหน้า *';
   function setMode(mode) {
     visitMode = mode;
@@ -472,7 +474,7 @@
     $('memberBlock').hidden = !first;        // ครั้งที่ 2+ ไม่ต้องกรอกสมาชิก
     $('projDescField').hidden = !first;      // ครั้งที่ 2+ ไม่ต้องกรอกรายละเอียด
     if (first) {
-      $('topicLabel').innerHTML = 'หัวข้อโครงงาน <span class="muted">(ถ้ามี)</span>';
+      $('topicLabel').innerHTML = 'หัวข้อโปรเจค <span class="muted">(ถ้ามี)</span>';
       topicInput.placeholder = 'เช่น ระบบจัดการคลังสินค้าด้วย RFID';
       $('descLabel').textContent = DESC_FIRST;
     } else {
@@ -494,7 +496,7 @@
     if (visitMode !== 'first') { $('dupWarn').hidden = true; return null; }
     const dup = duplicateOf(topicInput.value);
     if (dup) {
-      $('dupWarn').innerHTML = `⚠ <strong>มีกลุ่มที่ทำหัวข้อโครงงานนี้ไปแล้ว</strong> (${esc(dup.members.map(m => m.name).join(', ') || 'ไม่ระบุสมาชิก')} · เข้าพบล่าสุด ${esc(dup.lastDate)})<br>ถ้าเป็นกลุ่มเดียวกัน ให้เลือก "NEXT · อัพเดทความคืบหน้าโครงงาน" · ถ้าเป็นกลุ่มใหม่ กรุณาใช้ชื่อหัวข้ออื่น`;
+      $('dupWarn').innerHTML = `⚠ <strong>มีกลุ่มที่ทำหัวข้อโปรเจคนี้ไปแล้ว</strong> (${esc(dup.members.map(m => m.name).join(', ') || 'ไม่ระบุสมาชิก')} เข้าพบล่าสุด ${esc(dup.lastDate)})<br>ถ้าเป็นกลุ่มเดียวกัน ให้เลือก "อัพเดทความคืบหน้าโปรเจค" ถ้าเป็นกลุ่มใหม่ กรุณาใช้ชื่อหัวข้ออื่น`;
       $('dupWarn').hidden = false;
     } else $('dupWarn').hidden = true;
     return dup;
@@ -507,7 +509,7 @@
     topicList.innerHTML = hits.map((t, i) => `
       <div class="ac-item${i === acIndex ? ' active' : ''}" data-i="${i}">
         <div class="t">${esc(t.topic)}</div>
-        <div class="m">เข้าพบแล้ว ${t.rounds} รอบ · ล่าสุด ${esc(t.lastDate)} · ${t.members.map(m => esc(m.name)).join(', ')}</div>
+        <div class="m">เข้าพบแล้ว ${t.rounds} รอบ (ล่าสุด ${esc(t.lastDate)}) ${t.members.map(m => esc(m.name)).join(', ')}</div>
       </div>`).join('');
     topicList.querySelectorAll('.ac-item').forEach(el => el.onmousedown = ev => { ev.preventDefault(); chooseTopic(hits[+el.dataset.i]); });
     topicList.hidden = false;
@@ -647,14 +649,14 @@
       if (!form.description) errs.push('กรุณาระบุเรื่องที่จะปรึกษา');
     } else if (category === 'project') {
       form.topic = $('topic').value.trim(); form.description = $('desc').value.trim();
-      if (visitMode === 'first' && duplicateOf(form.topic)) errs.push('มีกลุ่มที่ทำหัวข้อโครงงานนี้ไปแล้ว กรุณาใช้ชื่อหัวข้ออื่น หรือเลือก "อัพเดทความคืบหน้าโครงงาน" ถ้าเป็นกลุ่มเดียวกัน');
-      if (visitMode === 'next' && !selectedTopic) errs.push('กรุณาเลือกหัวข้อที่เคยเข้าพบจากรายการ (ถ้าไม่มี ให้เลือก "เข้าพบครั้งแรก เสนอหัวข้อโครงงาน")');
-      if (visitMode === 'first' && !form.description) errs.push('กรุณาอธิบายลักษณะ/ขอบเขตโครงงาน');
+      if (visitMode === 'first' && duplicateOf(form.topic)) errs.push('มีกลุ่มที่ทำหัวข้อโปรเจคนี้ไปแล้ว กรุณาใช้ชื่อหัวข้ออื่น หรือเลือก "อัพเดทความคืบหน้าโครงงาน" ถ้าเป็นกลุ่มเดียวกัน');
+      if (visitMode === 'next' && !selectedTopic) errs.push('กรุณาเลือกหัวข้อที่เคยเข้าพบจากรายการ (ถ้าไม่มี ให้เลือก "เข้าพบครั้งแรก เสนอหัวข้อโปรเจค")');
+      if (visitMode === 'first' && !form.description) errs.push('กรุณาอธิบายลักษณะ/ขอบเขตโปรเจค');
     } else if (category === 'present') {
       const c = courses[+$('course').value];
       if (!c) errs.push('กรุณาเลือกรายวิชา'); else form.course = c;
       form.topic = $('presentTopic').value.trim(); form.description = $('presentNote').value.trim();
-      if (!form.topic) errs.push('กรุณาระบุหัวข้อโครงงานที่จะนำเสนอ');
+      if (!form.topic) errs.push('กรุณาระบุหัวข้อโปรเจคที่จะนำเสนอ');
     } else if (category === 'advise') {
       form.description = $('adviseDesc').value.trim();
       if (!form.description) errs.push('กรุณาระบุปัญหาที่จะปรึกษา');
@@ -681,7 +683,7 @@
       const res = await apiPost(form);
       if (!res.ok) { showError(res.error); if (res.reload) loadSlots(true); apiGet('topics').then(r => { if (r.ok) topics = r.topics; checkDuplicate(); }).catch(() => {}); return; }
       $('okWhen').textContent = res.when;
-      $('okTopic').textContent = (res.category ? `[${res.category}] ` : '') + res.topic + (res.round > 1 ? ` · รอบที่ ${res.round}` : '');
+      $('okTopic').textContent = (res.category ? `[${res.category}] ` : '') + res.topic + (res.round > 1 ? ` (รอบที่ ${res.round})` : '');
       $('okId').textContent = res.bookingId;
       const showLine = category === 'project' && visitMode === 'first';
       $('okLine').hidden = !showLine;
