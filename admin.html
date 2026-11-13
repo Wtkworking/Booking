@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex, nofollow">
-  <title>AjGolf Connect · หน้าอาจารย์</title>
+  <title>AjGolf Connect หน้าอาจารย์</title>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Mitr:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
     :root { --ink:#1a1a2e; --panel:#fff8e6; --red:#e52521; --red-dark:#9c1410; --grass:#00a800; --grass-dark:#007000; --coin:#fcd000; --coin-dark:#c88000; --brick:#e5a04a; --brick-dark:#8a3a0a; --sky:#2b3a67; --px:4px;
@@ -74,8 +74,8 @@
 <body>
 <div class="wrap">
   <header>
-    <h1>AjGolf Connect · TEACHER</h1>
-    <p>ปิด/เปิดวันเข้าพบ · หยุดรับจองชั่วคราว · กำหนดวันปิดรับ</p>
+    <h1>AjGolf Connect TEACHER</h1>
+    <p>ปิด/เปิดวันเข้าพบ, หยุดรับจองชั่วคราว, กำหนดวันปิดรับ</p>
   </header>
 
   <!-- ล็อกอิน -->
@@ -123,7 +123,7 @@
     <section class="panel">
       <h2>ปิด/เปิดวันเข้าพบ</h2>
       <div class="body">
-        <p class="muted" style="margin:0 0 10px">คลิกวันเพื่อดูช่องเวลา แล้วกด<b>ปิดเฉพาะช่วง</b>หรือ<b>ปิดทั้งวัน</b> · ตัวเลขใต้วันคือจำนวนกลุ่มที่จองแล้ว (ปิดช่วงที่มีคนจองไว้ การจองเดิมยังอยู่ ต้องแจ้งนักศึกษาเอง)</p>
+        <p class="muted" style="margin:0 0 10px">คลิกวันเพื่อดูช่องเวลา แล้วกด<b>ปิดเฉพาะช่วง</b>หรือ<b>ปิดทั้งวัน</b> ตัวเลขใต้วันคือจำนวนกลุ่มที่จองแล้ว (ปิดช่วงที่มีคนจองไว้ การจองเดิมยังอยู่ ต้องแจ้งนักศึกษาเอง)</p>
         <div class="cal-head">
           <button type="button" class="pxbtn ghost" id="prevMonth">&lt;</button>
           <div class="month" id="monthLabel"></div>
@@ -231,7 +231,7 @@
     }).join('');
     box.innerHTML = `
       <div class="dayedit">
-        <h3><span>${thaiDate(key)} ${cl.full ? '· <span style="color:var(--red)">ปิดทั้งวัน</span>' : cl.ranges.length ? '· <span style="color:var(--red)">ปิดบางช่วง</span>' : ''}</span>
+        <h3><span>${thaiDate(key)} ${cl.full ? '<span style="color:var(--red)">ปิดทั้งวัน</span>' : cl.ranges.length ? '<span style="color:var(--red)">ปิดบางช่วง</span>' : ''}</span>
           ${past ? '<span class="muted">วันที่ผ่านแล้ว</span>' : `<button type="button" class="pxbtn ${cl.full ? '' : 'danger'}" id="toggleWhole">${cl.full ? 'เปิดรับทั้งวัน' : 'ปิดทั้งวัน'}</button>`}
         </h3>
         <div class="muted">${cl.full ? 'กด "เปิดรับทั้งวัน" เพื่อยกเลิกการปิด' : 'กดช่องเวลาเพื่อสลับ เปิด ↔ ปิด เฉพาะช่วงนั้น'}</div>
@@ -239,7 +239,7 @@
       </div>
       <div class="daylist">
         <h3>การจองในวันนี้ (${list.length})</h3>
-        ${list.length ? list.map(b => `<div class="bk"><b>${b.time}</b>${b.category ? `<span class="muted">[${esc(b.category)}]</span> ` : ''}${esc(b.topic)}<div class="muted">${esc(b.members).replace(/\n/g, ' · ')}</div></div>`).join('') : '<p class="muted">ยังไม่มีการจอง</p>'}
+        ${list.length ? list.map(b => `<div class="bk"><b>${b.time}</b>${b.category ? `<span class="muted">[${esc(b.category)}]</span> ` : ''}${esc(b.topic)}<div class="muted">${esc(b.members).replace(/\n/g, ', ')}</div></div>`).join('') : '<p class="muted">ยังไม่มีการจอง</p>'}
       </div>`;
     const tw = $('toggleWhole');
     if (tw) tw.onclick = async () => {
