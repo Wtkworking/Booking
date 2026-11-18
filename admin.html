@@ -144,7 +144,7 @@
 
 <script>
   // ===== URL ของ Apps Script Web App (ตัวเดียวกับ index.html) =====
-  const API_URL = 'https://script.google.com/macros/s/AKfycbw_HdEGAxKpjA0u7djtkXfpct5Ji_Sp2WRS0Nn6tDe_RHrwspzw71vE1HobxhvXi3nt/exec';
+  const API_URL = 'https://script.google.com/macros/s/AKfycbzAoSp66UWwlSnL9beYGbHX3WZpbtlGqlKPiDl40cpIcrt12dOeR2geEYg8CU8NNs9I/exec';
   // =================================================================
   const $ = id => document.getElementById(id);
   const TH_MONTHS = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
@@ -154,7 +154,7 @@
   let state = null, viewYear, viewMonth, selectedDay = null;
 
   async function api(op, extra) {
-    const res = await fetch(API_URL, { method: 'POST', redirect: 'follow', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    const res = await fetch(API_URL, { method: 'POST', redirect: 'follow', cache: 'no-store', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
       body: JSON.stringify(Object.assign({ action: 'admin', pin, op }, extra || {})) });
     return res.json();
   }
