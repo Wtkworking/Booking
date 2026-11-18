@@ -390,7 +390,7 @@
   const DOW = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
 
   async function apiGet(action) {
-    const res = await fetch(`${API_URL}?action=${action}`, { method: 'GET', redirect: 'follow' });
+    const res = await fetch(`${API_URL}?action=${action}&_=${Date.now()}`, { method: 'GET', redirect: 'follow', cache: 'no-store' });
     return res.json();
   }
   async function apiPost(payload) {
@@ -451,7 +451,7 @@
       courses = r.ok ? r.courses : [];
       $('course').innerHTML = '<option value="" disabled selected hidden>— เลือกรายวิชา —</option>' + courses.map((c, i) => `<option value="${i}">${esc(c.code)} ${esc(c.name)}</option>`).join('');
       if (!courses.length) $('course').innerHTML = '<option value="">ยังไม่มีรายวิชาเปิดรับนำเสนอ กรุณาติดต่ออาจารย์</option>';
-      coursesLoaded = true;
+      coursesLoaded = courses.length > 0;   // ถ้าว่าง ให้ลองโหลดใหม่เมื่อกดเลือกประเภทอีกครั้ง
     } catch (e) { $('course').innerHTML = '<option value="">โหลดรายวิชาไม่สำเร็จ</option>'; }
   }
 
