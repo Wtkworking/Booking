@@ -221,7 +221,7 @@
   <header>
     <h1>AjGolf Connect<span class="th">จองคิวเข้าพบศูนย์ AiBA และอาจารย์</span></h1>
     <div class="hud">
-      <span><i class="coin-icon"></i> 30 MIN</span>
+      <span><i class="coin-icon"></i> <span id="hudSlot">30 MIN</span></span>
       <span class="th">จันทร์ พฤหัส ศุกร์</span>
       <span>09:00–12:00, 14:00–17:00</span>
       <span class="th" id="openUntil"></span>
@@ -294,6 +294,7 @@
             <select id="course"><option value="" disabled selected hidden>กำลังโหลดรายวิชา…</option></select>
           </div>
           <div class="field"><label for="presentTopic">หัวข้อโปรเจคที่จะนำเสนอ *</label><input id="presentTopic" maxlength="200" placeholder="ชื่อโครงงาน"></div>
+          <p class="muted" style="margin:0 0 12px">⏱ การนำเสนอใช้เวลา<strong>รอบละ 15 นาที</strong> ช่องเวลาด้านล่างจะเป็นช่อง 15 นาที</p>
           <div class="field"><label for="presentNote">หมายเหตุ <span class="muted">(ถ้ามี)</span></label><input id="presentNote" placeholder="เช่น อุปกรณ์ที่ต้องใช้ / ขอ projector"></div>
         </div>
 
@@ -329,6 +330,13 @@
     <section class="panel">
       <h2>เลือกวันและเวลา</h2>
       <div class="body">
+        <div class="field">
+          <label>รูปแบบการเข้าพบ *</label>
+          <div class="seg" role="radiogroup">
+            <button type="button" class="seg-btn" data-mode="online" role="radio" aria-checked="false">ออนไลน์</button>
+            <button type="button" class="seg-btn" data-mode="onsite" role="radio" aria-checked="false">มาพบที่ห้อง AiBA (3-0105)</button>
+          </div>
+        </div>
         <div class="cal-head">
           <button type="button" class="pxbtn ghost" id="prevMonth" aria-label="เดือนก่อนหน้า">&lt;</button>
           <div class="month" id="monthLabel">…</div>
@@ -368,6 +376,7 @@
     <p style="font-size:18px;font-weight:600" id="okWhen"></p>
     <p id="okTopic" class="muted"></p>
     <p class="muted">รหัสการจอง <strong id="okId"></strong></p>
+    <p id="okMode"></p>
     <p class="muted" style="margin-top:14px" id="okLineMsg">บันทึกลงปฏิทินอาจารย์แล้ว อย่าลืมเข้ากลุ่ม LINE เพื่อรับการติดต่อกลับ</p>
     <p style="margin-top:10px" id="okLine"><a class="pxbtn line" href="https://line.me/ti/g/SehdFCAQh7" target="_blank" rel="noopener">เข้ากลุ่ม LINE</a></p>
     <p style="margin-top:18px"><button type="button" class="pxbtn ghost" onclick="location.reload()">CONTINUE? จองคิวอีกกลุ่ม</button></p>
@@ -407,6 +416,7 @@
     if (r.ok) {
       cfg = r.config; $('memberHint').textContent = `ไม่เกิน ${cfg.maxMembers} คน`;
       if (cfg.openUntil) $('openUntil').textContent = `เปิดจองถึง ${cfg.openUntil}`;
+      if (cfg.slotMinutes) $('hudSlot').textContent = `${cfg.slotMinutes} MIN`;
       if (cfg.enabled === false) {
         $('closedBanner').textContent = '⏸ ' + (cfg.notice || 'ขณะนี้ปิดรับการจองชั่วคราว');
         $('closedBanner').hidden = false; $('submit').disabled = true;
@@ -414,8 +424,16 @@
     }
   }).catch(() => {});
 
+  // ---- รูปแบบการเข้าพบ ----
+  let meetMode = null;   // 'online' | 'onsite'
+  document.querySelectorAll('[data-mode]').forEach(btn => btn.onclick = () => {
+    meetMode = btn.dataset.mode;
+    document.querySelectorAll('[data-mode]').forEach(b => { b.classList.toggle('active', b === btn); b.setAttribute('aria-checked', b === btn); });
+  });
+
   // ---- ประเภทการเข้าพบ ----
   let category = null;              // 'aiba' | 'project' | 'present' | 'advise' | 'other'
+  let lastSlotCat = null;           // ประเภทที่ใช้โหลดช่องเวลาล่าสุด (นำเสนอ = 15 นาที, อื่น = ตามตั้งค่า)
   const NEED_MAJOR = { present: true, advise: true, other: true };
   const DETAIL_TITLE = { aiba: 'ปรึกษาระบบงานศูนย์ AiBA', project: 'ข้อมูลโปรเจคจบ', present: 'นัดคิวนำเสนอโปรเจคในรายวิชา', advise: 'ปรึกษาอาจารย์ที่ปรึกษา', other: 'เรื่องอื่น ๆ' };
   const MEMBER_LABEL = { project: 'สมาชิกกลุ่ม *', present: 'สมาชิกกลุ่มที่นำเสนอ *', advise: 'ผู้เข้าพบ *', other: 'ผู้เข้าพบ *' };
@@ -440,6 +458,7 @@
     $('lineBox').hidden = cat !== 'project';
     if (cat === 'project') setMode('first');
     if (cat === 'present') loadCourses();
+    if ((cat === 'present') !== (lastSlotCat === 'present')) { lastSlotCat = cat; loadSlots(false); }
     $('error').hidden = true;
     $('detailPanel').scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
@@ -557,8 +576,9 @@
   async function loadSlots(keepSelection) {
     $('cal').innerHTML = '<div class="muted" style="grid-column:1/-1;text-align:center;padding:20px">LOADING…</div>';
     try {
-      const r = await apiGet('slots');
+      const r = await apiGet('slots' + (category ? `&cat=${category}` : ''));
       if (!r.ok) throw new Error(r.error);
+      if (r.slotMinutes) $('hudSlot').textContent = `${r.slotMinutes} MIN`;
       if (!r.days.length) { $('cal').innerHTML = `<div class="muted" style="grid-column:1/-1;text-align:center;padding:20px">${cfg.enabled === false ? 'ปิดรับการจองชั่วคราว' : 'ยังไม่มีช่วงเวลาว่างในช่วงที่เปิดจอง'}</div>`; return; }
       slotMap = {};
       r.days.forEach(d => { slotMap[d.dateKey] = d; });
@@ -639,7 +659,7 @@
       major: r.querySelector('.m-major') ? r.querySelector('.m-major').value.trim() : '',
     })).filter(m => m.id || m.name || m.major);
     const slot = document.querySelector('input[name=slot]:checked');
-    const form = { category, visit: visitMode, topic: '', description: '', members: [], slotKey: slot ? slot.value : '' };
+    const form = { category, visit: visitMode, topic: '', description: '', members: [], slotKey: slot ? slot.value : '', mode: meetMode };
 
     const needMembers = category && category !== 'aiba' && !(category === 'project' && visitMode === 'next');
     if (category === 'aiba') {
@@ -673,6 +693,7 @@
         if (NEED_MAJOR[category] && !m.major) errs.push(`คนที่ ${i + 1}: กรุณาระบุสาขาวิชา`);
       });
     }
+    if (!meetMode) errs.push('กรุณาเลือกรูปแบบการเข้าพบ (ออนไลน์ / ห้อง AiBA)');
     if (!selectedDate) errs.push('กรุณาเลือกวันที่บนปฏิทิน');
     else if (!form.slotKey) errs.push('กรุณาเลือกช่วงเวลาเข้าพบ');
     if (errs.length) return showError(errs.join('\n'));
@@ -685,6 +706,7 @@
       $('okWhen').textContent = res.when;
       $('okTopic').textContent = (res.category ? `[${res.category}] ` : '') + res.topic + (res.round > 1 ? ` (รอบที่ ${res.round})` : '');
       $('okId').textContent = res.bookingId;
+      $('okMode').innerHTML = res.mode ? `รูปแบบ: <strong>${esc(res.mode)}</strong>` + (res.onlineLink ? `<br><a class="pxbtn line" style="margin-top:8px" href="${esc(res.onlineLink)}" target="_blank" rel="noopener">เข้าห้องประชุมออนไลน์</a>` : '') : '';
       const showLine = category === 'project' && visitMode === 'first';
       $('okLine').hidden = !showLine;
       $('okLineMsg').textContent = showLine ? 'บันทึกลงปฏิทินอาจารย์แล้ว อย่าลืมเข้ากลุ่ม LINE เพื่อรับการติดต่อกลับ' : 'บันทึกลงปฏิทินอาจารย์แล้ว แล้วพบกันตามนัด';
