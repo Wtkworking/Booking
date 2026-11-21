@@ -19,6 +19,7 @@
     .panel h2 { position:absolute; top:-18px; left:16px; margin:0; background: var(--red); color:#fff; padding:6px 12px; font-size:15px; font-weight:600; border: var(--px) solid var(--ink); box-shadow: 4px 4px 0 var(--ink); }
     .body { margin-top: 10px; }
     label { display:block; font-size:14px; color:#5a4a3a; margin-bottom:4px; }
+    select { width:100%; font:inherit; padding:9px 11px; background:#fff; color:var(--ink); border: var(--px) solid var(--ink); }
     input, textarea { width:100%; font:inherit; padding:9px 11px; background:#fff; color:var(--ink); border: var(--px) solid var(--ink); box-shadow: inset 4px 4px 0 #e8e0cc; }
     input:focus, textarea:focus { outline:none; box-shadow: inset 4px 4px 0 #e8e0cc, 0 0 0 var(--px) var(--coin); }
     .pxbtn { font:inherit; font-weight:600; cursor:pointer; border: var(--px) solid var(--ink); padding: 9px 14px; background: var(--grass); color:#fff; box-shadow: 4px 4px 0 var(--ink); }
@@ -45,6 +46,10 @@
     .day.open:hover { background: var(--coin); box-shadow: inset -4px -4px 0 var(--coin-dark), 3px 3px 0 var(--ink); }
     .day.closed { background: var(--red); color:#fff; border-color: var(--ink); cursor:pointer; box-shadow: inset -4px -4px 0 var(--red-dark), 3px 3px 0 var(--ink); }
     .day.closed::after { content:'✕'; position:absolute; top:3px; right:5px; font-size:9px; }
+    .day.extra { background:#4aa3ff; color:#fff; border-color: var(--ink); cursor:pointer; box-shadow: inset -4px -4px 0 #1f6fd1, 3px 3px 0 var(--ink); }
+    .day.extra.partial { background: repeating-linear-gradient(135deg, #4aa3ff 0 8px, var(--red) 8px 12px); }
+    .day.offday { cursor:pointer; }
+    .day.offday:hover { outline: 3px dashed #4aa3ff; outline-offset:-3px; }
     .day.past { opacity:.45; cursor:default; box-shadow:none; }
     .day.today { outline: 3px dashed var(--ink); outline-offset: -3px; }
     .day .n { position:absolute; bottom:3px; left:0; right:0; text-align:center; font-family: var(--thai-font); font-size:11px; font-weight:600; color: var(--ink); }
@@ -105,6 +110,15 @@
           <label for="notice">ข้อความที่นักศึกษาจะเห็นตอนปิดรับ</label>
           <div class="row"><input id="notice"><button class="pxbtn ghost" id="saveNotice">บันทึกข้อความ</button></div>
         </div>
+        <div class="row" style="margin-top:14px">
+          <div><label for="slotMin">ความยาวช่องเวลา (นาที) <span class="muted">— ใช้กับทุกประเภท ยกเว้น "นำเสนอโปรเจคในรายวิชา" ที่บังคับ 15 นาทีเสมอ</span></label>
+            <select id="slotMin"><option value="15">15 นาที</option><option value="20">20 นาที</option><option value="30">30 นาที</option><option value="45">45 นาที</option><option value="60">60 นาที</option></select></div>
+          <button class="pxbtn ghost" id="saveSlotMin">บันทึก</button>
+        </div>
+        <div style="margin-top:14px">
+          <label for="onlineLink">ลิงก์ประชุมออนไลน์ (Teams/Zoom) — แสดงให้นักศึกษาที่เลือก "ออนไลน์"</label>
+          <div class="row"><input id="onlineLink" placeholder="https://teams.microsoft.com/…"><button class="pxbtn ghost" id="saveOnline">บันทึกลิงก์</button></div>
+        </div>
       </div>
     </section>
 
@@ -134,7 +148,8 @@
           <span><i style="background:var(--brick)"></i>เปิดรับ</span>
           <span><i style="background:var(--red)"></i>ปิดทั้งวัน</span>
           <span><i style="background:repeating-linear-gradient(135deg,var(--brick) 0 4px,var(--red) 4px 6px)"></i>ปิดบางช่วง</span>
-          <span><i style="background:#e8e0cc;border-color:#d0c6ae"></i>ไม่ใช่วันเข้าพบ</span>
+          <span><i style="background:#4aa3ff"></i>เปิดพิเศษ</span>
+          <span><i style="background:#e8e0cc;border-color:#d0c6ae"></i>ไม่ใช่วันเข้าพบ (คลิกเพื่อเปิดพิเศษ)</span>
         </div>
         <div class="daylist" id="daylist"></div>
       </div>
@@ -188,6 +203,8 @@
     $('toggleEnabled').textContent = on ? 'หยุดรับจองชั่วคราว' : 'เปิดรับจองอีกครั้ง';
     $('toggleEnabled').className = 'pxbtn ' + (on ? 'danger' : '');
     $('notice').value = r.notice || '';
+    $('slotMin').value = String(r.slotMinutes || 30); if (![...$('slotMin').options].some(o => o.value === $('slotMin').value)) { const o = document.createElement('option'); o.value = o.textContent = String(r.slotMinutes); $('slotMin').appendChild(o); $('slotMin').value = String(r.slotMinutes); }
+    $('onlineLink').value = r.onlineLink || '';
     $('endDate').value = r.openUntil;
     $('leadDays').textContent = r.minLeadDays; $('todayLabel').textContent = thaiDate(r.today);
     if (viewYear === undefined) { const [y, m] = r.today.split('-').map(Number); viewYear = y; viewMonth = m - 1; }
@@ -202,17 +219,22 @@
     for (let d = 1; d <= dim; d++) {
       const dt = new Date(viewYear, viewMonth, d), key = keyOf(dt);
       const el = document.createElement('div'); el.className = 'day'; el.textContent = d;
-      const isOpenDow = state.openDays.includes(dt.getDay());
+      const isExtra = !!(state.extraDays && key in state.extraDays);
+      const isOpenDow = state.openDays.includes(dt.getDay()) || isExtra;
       const n = (state.bookings[key] || []).length;
       if (key === state.today) el.classList.add('today');
       if (isOpenDow) {
         const cl = state.closures[key];
         const full = !!(cl && cl.full), partial = !!(cl && !cl.full && cl.ranges.length);
-        el.classList.add(full ? 'closed' : partial ? 'partial' : 'open');
+        el.classList.add(full ? 'closed' : isExtra ? 'extra' : 'open');
+        if (partial) el.classList.add('partial');
         if (key < state.today) el.classList.add('past');
         if (n) { const b = document.createElement('span'); b.className = 'n'; b.textContent = `${n} กลุ่ม`; el.appendChild(b); }
         el.onclick = () => { selectedDay = key; renderDayList(); };
-      } else if (n) { const b = document.createElement('span'); b.className = 'n'; b.textContent = `${n}`; el.appendChild(b); }
+      } else {
+        if (key >= state.today) { el.classList.add('offday'); el.onclick = () => { selectedDay = key; renderDayList(); }; }
+        if (n) { const b = document.createElement('span'); b.className = 'n'; b.textContent = `${n}`; el.appendChild(b); }
+      }
       cal.appendChild(el);
     }
     renderDayList();
@@ -222,6 +244,16 @@
     if (!selectedDay) { box.innerHTML = ''; return; }
     const key = selectedDay, list = state.bookings[key] || [], cl = state.closures[key] || { full: false, ranges: [] };
     const past = key < state.today;
+    const [yy, mm, dd] = key.split('-').map(Number);
+    const isExtra = !!(state.extraDays && key in state.extraDays);
+    const isDow = state.openDays.includes(new Date(yy, mm - 1, dd).getDay());
+    if (!isDow && !isExtra) {
+      box.innerHTML = `<div class="dayedit"><h3><span>${thaiDate(key)} <span class="muted">ไม่ใช่วันเข้าพบปกติ</span></span>
+        ${past ? '' : '<button type="button" class="pxbtn" id="openExtra">เปิดวันนี้เป็นพิเศษ</button>'}</h3>
+        <div class="muted">เปิดแล้วนักศึกษาจะจองวันนี้ได้ตามช่องเวลาปกติ (ปิดบางช่วงได้เหมือนวันอื่น)</div></div>`;
+      const b = $('openExtra'); if (b) b.onclick = async () => { const r = await api('toggleExtraDay', { date: key }); if (!r.ok) return flash(r.error, true); apply(r); flash(`${thaiDate(key)} → เปิดพิเศษแล้ว`); };
+      return;
+    }
     const bookedTimes = new Set(list.map(b => b.time));
     const slotsHtml = state.slotTimes.map(t => {
       const closed = cl.full || cl.ranges.some(rg => rg.start < t.end && rg.end > t.start);
@@ -232,15 +264,17 @@
     box.innerHTML = `
       <div class="dayedit">
         <h3><span>${thaiDate(key)} ${cl.full ? '<span style="color:var(--red)">ปิดทั้งวัน</span>' : cl.ranges.length ? '<span style="color:var(--red)">ปิดบางช่วง</span>' : ''}</span>
-          ${past ? '<span class="muted">วันที่ผ่านแล้ว</span>' : `<button type="button" class="pxbtn ${cl.full ? '' : 'danger'}" id="toggleWhole">${cl.full ? 'เปิดรับทั้งวัน' : 'ปิดทั้งวัน'}</button>`}
+          ${past ? '<span class="muted">วันที่ผ่านแล้ว</span>' : `${isExtra ? '<button type="button" class="pxbtn ghost" id="dropExtra">ยกเลิกวันพิเศษ</button> ' : ''}<button type="button" class="pxbtn ${cl.full ? '' : 'danger'}" id="toggleWhole">${cl.full ? 'เปิดรับทั้งวัน' : 'ปิดทั้งวัน'}</button>`}
         </h3>
         <div class="muted">${cl.full ? 'กด "เปิดรับทั้งวัน" เพื่อยกเลิกการปิด' : 'กดช่องเวลาเพื่อสลับ เปิด ↔ ปิด เฉพาะช่วงนั้น'}</div>
         <div class="slotgrid">${slotsHtml}</div>
       </div>
       <div class="daylist">
         <h3>การจองในวันนี้ (${list.length})</h3>
-        ${list.length ? list.map(b => `<div class="bk"><b>${b.time}</b>${b.category ? `<span class="muted">[${esc(b.category)}]</span> ` : ''}${esc(b.topic)}<div class="muted">${esc(b.members).replace(/\n/g, ', ')}</div></div>`).join('') : '<p class="muted">ยังไม่มีการจอง</p>'}
+        ${list.length ? list.map(b => `<div class="bk"><b>${b.time}</b>${b.category ? `<span class="muted">[${esc(b.category)}]</span> ` : ''}${esc(b.topic)}${b.mode ? ` <span class="muted">(${esc(b.mode)})</span>` : ''}<div class="muted">${esc(b.members).replace(/\n/g, ', ')}</div></div>`).join('') : '<p class="muted">ยังไม่มีการจอง</p>'}
       </div>`;
+    const de = $('dropExtra');
+    if (de) de.onclick = async () => { if (list.length && !confirm(`วันนี้มี ${list.length} กลุ่มจองไว้ ยกเลิกวันพิเศษหรือไม่?`)) return; const r = await api('toggleExtraDay', { date: key }); if (!r.ok) return flash(r.error, true); apply(r); flash(`${thaiDate(key)} → ยกเลิกวันพิเศษแล้ว`); };
     const tw = $('toggleWhole');
     if (tw) tw.onclick = async () => {
       if (!cl.full && list.length && !confirm(`วันนี้มี ${list.length} กลุ่มจองไว้แล้ว ต้องการปิดทั้งวันหรือไม่?\n(การจองเดิมยังอยู่ ต้องแจ้งนักศึกษาเอง)`)) return;
@@ -262,6 +296,8 @@
     const r = await api('setEnabled', { enabled: next }); if (!r.ok) return flash(r.error, true);
     apply(r); flash(next ? 'เปิดรับจองแล้ว' : 'หยุดรับจองชั่วคราวแล้ว');
   };
+  $('saveSlotMin').onclick = async () => { const r = await api('setSlotMinutes', { minutes: +$('slotMin').value }); if (!r.ok) return flash(r.error, true); apply(r); flash(`ช่องเวลาละ ${r.slotMinutes} นาที (มีผลทันที)`); };
+  $('saveOnline').onclick = async () => { const r = await api('setOnlineLink', { link: $('onlineLink').value.trim() }); if (!r.ok) return flash(r.error, true); apply(r); flash('บันทึกลิงก์แล้ว'); };
   $('saveNotice').onclick = async () => { const r = await api('setNotice', { notice: $('notice').value.trim() }); if (!r.ok) return flash(r.error, true); apply(r); flash('บันทึกข้อความแล้ว'); };
   $('saveEnd').onclick = async () => { const d = $('endDate').value; if (!d) return; const r = await api('setEnd', { date: d }); if (!r.ok) return flash(r.error, true); apply(r); flash(`เปิดจองถึง ${thaiDate(d)}`); };
   $('extendMonth').onclick = async () => {
